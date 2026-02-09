@@ -669,19 +669,12 @@ var _s = __turbopack_context__.k.signature();
 function ProjectsPage() {
     _s();
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
-    const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "ProjectsPage.useEffect": ()=>{
-            // Obtenemos el usuario de manera segura en el cliente
-            const u = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getUserFromCookies"])();
-            setUser(u);
-        }
-    }["ProjectsPage.useEffect"], []);
+    // LECTURA DIRECTA: Sin useEffect
+    const user = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getUserFromCookies"])();
     // 1. Proyectos Disponibles (Buscador)
     const availableProjects = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mock$2d$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["mockProjects"].filter((p)=>p.status === 'En lista de espera');
-    const filteredProjects = availableProjects.filter((project)=>project.title.toLowerCase().includes(searchTerm.toLowerCase()) || project.abstract.toLowerCase().includes(searchTerm.toLowerCase()) || project.category.toLowerCase().includes(searchTerm.toLowerCase()));
-    // 2. Proyectos Inscritos (Corrección del Bug)
-    // Filtramos proyectos donde el array de estudiantes inscritos incluya al usuario actual
+    const filteredProjects = availableProjects.filter((project)=>project.title.toLowerCase().includes(searchTerm.toLowerCase()) || project.description.toLowerCase().includes(searchTerm.toLowerCase()) || project.category.toLowerCase().includes(searchTerm.toLowerCase()));
+    // 2. Proyectos Inscritos
     const myProjects = user ? __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mock$2d$data$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["mockProjects"].filter((p)=>p.studentsEnrolled?.some((student)=>student.id === user.id)) : [];
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "space-y-12",
@@ -694,22 +687,21 @@ function ProjectsPage() {
                         children: "Mis Proyectos Inscritos"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                        lineNumber: 44,
+                        lineNumber: 38,
                         columnNumber: 13
                     }, this),
                     myProjects.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "grid gap-6 md:grid-cols-2 lg:grid-cols-3",
-                        children: myProjects.map((project)=>// Nota: Podrías querer un componente distinto para "Mis proyectos" con estado de progreso
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$project$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ProjectCard"], {
+                        children: myProjects.map((project)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$project$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ProjectCard"], {
                                 project: project
                             }, project.id, false, {
                                 fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                                lineNumber: 49,
+                                lineNumber: 42,
                                 columnNumber: 25
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                        lineNumber: 46,
+                        lineNumber: 40,
                         columnNumber: 17
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "bg-muted/30 p-6 rounded-lg border text-center",
@@ -718,18 +710,18 @@ function ProjectsPage() {
                             children: "No estás inscrito en ningún proyecto aún."
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                            lineNumber: 54,
+                            lineNumber: 47,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                        lineNumber: 53,
+                        lineNumber: 46,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                lineNumber: 43,
+                lineNumber: 37,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -742,12 +734,39 @@ function ProjectsPage() {
                                 children: "Explorar Proyectos"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                                lineNumber: 63,
+                                lineNumber: 56,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-muted-foreground",
                                 children: "Encuentra nuevos proyectos aprobados y únete al equipo."
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
+                                lineNumber: 57,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
+                        lineNumber: 55,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "relative w-full md:w-1/2 lg:w-1/3",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                                className: "absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
+                                lineNumber: 63,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                type: "search",
+                                placeholder: "Buscar por título, categoría o palabra clave...",
+                                className: "pl-10 w-full",
+                                value: searchTerm,
+                                onChange: (e)=>setSearchTerm(e.target.value)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
                                 lineNumber: 64,
@@ -759,45 +778,18 @@ function ProjectsPage() {
                         lineNumber: 62,
                         columnNumber: 9
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "relative",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                                className: "absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
-                            }, void 0, false, {
-                                fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                                lineNumber: 70,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                type: "search",
-                                placeholder: "Buscar por título, categoría o palabra clave...",
-                                className: "pl-10 w-full md:w-1/2 lg:w-1/3",
-                                value: searchTerm,
-                                onChange: (e)=>setSearchTerm(e.target.value)
-                            }, void 0, false, {
-                                fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                                lineNumber: 71,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                        lineNumber: 69,
-                        columnNumber: 9
-                    }, this),
                     filteredProjects.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "grid gap-6 md:grid-cols-2 lg:grid-cols-3",
                         children: filteredProjects.map((project)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$project$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ProjectCard"], {
                                 project: project
                             }, project.id, false, {
                                 fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                                lineNumber: 83,
+                                lineNumber: 76,
                                 columnNumber: 17
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                        lineNumber: 81,
+                        lineNumber: 74,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg h-64",
@@ -806,28 +798,28 @@ function ProjectsPage() {
                             children: "No se encontraron proyectos disponibles con esa búsqueda."
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                            lineNumber: 88,
-                            columnNumber: 13
+                            lineNumber: 81,
+                            columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                        lineNumber: 87,
+                        lineNumber: 80,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-                lineNumber: 61,
+                lineNumber: 54,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/estudiante/proyectos/page.tsx",
-        lineNumber: 39,
+        lineNumber: 33,
         columnNumber: 5
     }, this);
 }
-_s(ProjectsPage, "Zn3u6Owlq3/FlIHmuAzOjQ6fIhQ=");
+_s(ProjectsPage, "a1cMJ8t0eYFnsCEdGcHtaGJdbCM=");
 _c = ProjectsPage;
 var _c;
 __turbopack_context__.k.register(_c, "ProjectsPage");

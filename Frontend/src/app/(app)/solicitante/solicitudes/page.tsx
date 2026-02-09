@@ -10,30 +10,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge'; // Asegúrate de tener este componente o usa un span con clases
-import type { User } from '@/lib/types';
+import { getUserFromCookies } from '@/lib/cookie-utils';
 import Link from 'next/link';
 
 export default function SolicitudesPage() {
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  // LECTURA DIRECTA: Sin useEffect, mucho más rápido.
+  const currentUser = getUserFromCookies();
 
-  React.useEffect(() => {
-    const storedUser = localStorage.getItem('proconecta_user');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  if (!currentUser) {
-    return <div>Cargando...</div>;
+  // Si estamos en el servidor (SSR), no hay usuario aún.
+  if (typeof window !== 'undefined' && !currentUser) {
+    return <div className="p-8 text-center text-muted-foreground">Cargando información...</div>;
   }
 
-  // Filtrar todos los proyectos de este solicitante
-  const userProjects = mockProjects.filter(
-    (p) => p.solicitante.id === currentUser.id
-  );
+  // Filtrar proyectos (Si es SSR, userProjects será vacío, no rompe nada)
+  const userProjects = currentUser 
+    ? mockProjects.filter((p) => p.solicitante.id === currentUser.id)
+    : [];
 
-  // Clasificación de proyectos
   const draftProjects = userProjects.filter((p) => p.status === 'Borrador');
   
   const rejectedProjects = userProjects.filter(
@@ -49,9 +42,7 @@ export default function SolicitudesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline">
-          Mis Solicitudes
-        </h1>
+        <h1 className="text-3xl font-bold font-headline">Mis Solicitudes</h1>
         <p className="text-muted-foreground">
           Gestione sus proyectos enviados, activos y el historial.
         </p>
@@ -67,7 +58,6 @@ export default function SolicitudesPage() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{project.title}</CardTitle>
-                    {/* Badge manual si no tienes el componente */}
                     <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">
                       {project.status}
                     </span>
@@ -75,7 +65,7 @@ export default function SolicitudesPage() {
                 </CardHeader>
                 <CardContent>
                    <p className="text-sm text-muted-foreground line-clamp-3">
-                     {project.abstract}
+                     {project.description}
                    </p>
                 </CardContent>
                 <CardFooter>
@@ -126,9 +116,7 @@ export default function SolicitudesPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-semibold text-red-800">Retroalimentación:</p>
-                  <p className="text-red-700">
-                    Revisar la sección de presupuesto y objetivos. Falta detalle en el cronograma.
-                  </p>
+                  <p className="text-red-700">{project.feedback}</p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="destructive" asChild>

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { mockUsers } from "@/lib/mock-data";
 import Image from "next/image";
+import { setUserCookie } from "@/lib/cookie-utils";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Por favor, ingresa un correo válido." }),
@@ -37,22 +37,27 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const { isSubmitting } = form.formState;
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Pequeño delay artificial para UX
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const user = mockUsers.find((u) => u.email === values.email);
 
     if (user) {
-      // Set cookie instead of localStorage for server-side access
-      document.cookie = `proconecta_user=${JSON.stringify(user)}; path=/; max-age=86400; SameSite=Strict`;
-      
-      // Keep localStorage for backward compatibility (optional)
-      localStorage.setItem("proconecta_user", JSON.stringify(user));
+      // 🔒 SEGURIDAD: Separamos la contraseña para NO guardarla
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userSafe } = user;
+
+      // Usamos la utilidad centralizada
+      setUserCookie(userSafe as any);
 
       toast({
         title: "Inicio de Sesión Exitoso",
         description: `¡Bienvenido, ${user.name}! Redirigiendo...`,
       });
       
-      // Redirect based on role - middleware will handle the rest
       if (user.role === 'administrator') {
         router.push("/administrador/solicitudes");
       } else if (user.role === 'solicitante') {
@@ -70,7 +75,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center">
           <Image 
@@ -79,14 +84,16 @@ export default function LoginPage() {
             width={300} 
             height={75}
             priority
+            className="mb-4"
           />
-          <h1 className="mt-4 text-3xl font-bold font-headline text-center">
-            Bienvenido al Sistema de Proyectos
+          <h1 className="text-3xl font-bold font-headline text-center">
+            Sistema de Proyectos
           </h1>
-          <p className="text-muted-foreground text-center">
-            Inicia sesión para conectarte con proyectos de impacto.
+          <p className="text-muted-foreground text-center mt-2">
+            Inicia sesión para gestionar o inscribirte en proyectos.
           </p>
         </div>
+        
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -118,12 +125,13 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Iniciar Sesión
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Iniciando..." : "Iniciar Sesión"}
             </Button>
           </form>
         </Form>
-        <div className="mt-4 text-center text-sm text-muted-foreground">
+        
+        <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>
             ¿No tienes una cuenta?{" "}
             <Link

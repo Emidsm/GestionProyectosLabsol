@@ -13,25 +13,45 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getUserFromCookies, clearUserCookie } from '@/lib/cookie-utils';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User as UserIcon } from 'lucide-react';
+import type { User } from '@/lib/types';
 
 export function UserNav() {
   const router = useRouter();
-  const user = getUserFromCookies();
+  const [user, setUser] = React.useState<User | null>(null);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  // EFECTO DE HIDRATACIÓN: 
+  // Esperamos a que el componente se monte para leer la cookie.
+  // Esto evita el error de "Hydration failed" porque el primer render
+  // en el cliente coincidirá con el del servidor (ambos null/loading).
+  React.useEffect(() => {
+    setIsMounted(true);
+    const u = getUserFromCookies();
+    setUser(u);
+  }, []);
 
   const handleLogout = () => {
     clearUserCookie();
-    localStorage.removeItem('proconecta_user');
     router.push('/');
   };
 
-  if (!user) return null;
+  // MIENTRAS CARGA (Skeleton):
+  // Mostramos un avatar gris para que la interfaz no "salte" ni parpadee.
+  if (!isMounted || !user) {
+    return (
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled>
+        <Avatar className="h-10 w-10">
+          <AvatarFallback className="bg-muted animate-pulse"></AvatarFallback>
+        </Avatar>
+      </Button>
+    );
+  }
 
   const initials = user.name
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : '??';
 
-  // LOGICA DE REDIRECCIÓN INTELIGENTE
   const profileLink = user.role === 'administrator' 
     ? '/administrador/perfil' 
     : '/perfil';
@@ -41,7 +61,9 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarFallback>{initials}</AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-primary font-bold">
+              {initials}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -56,14 +78,13 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {/* Aquí usamos la variable profileLink */}
-        <DropdownMenuItem onClick={() => router.push(profileLink)}>
-          <User className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={() => router.push(profileLink)} className="cursor-pointer">
+          <UserIcon className="mr-2 h-4 w-4" />
           Perfil
         </DropdownMenuItem>
         
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           Cerrar sesión
         </DropdownMenuItem>
