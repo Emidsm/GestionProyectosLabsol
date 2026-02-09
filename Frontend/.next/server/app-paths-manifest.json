@@ -1,0 +1,6 @@
+{
+  "/(app)/administrador/perfil/page": "app/(app)/administrador/perfil/page.js",
+  "/(app)/administrador/solicitudes/page": "app/(app)/administrador/solicitudes/page.js",
+  "/(app)/administrador/usuarios/page": "app/(app)/administrador/usuarios/page.js",
+  "/(app)/perfil/page": "app/(app)/perfil/page.js"
+}

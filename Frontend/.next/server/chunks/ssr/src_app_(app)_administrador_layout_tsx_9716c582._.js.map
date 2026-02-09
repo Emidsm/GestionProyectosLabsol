@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///home/emidsm/Descargas/GestionProyectosWeb/Frontend/src/app/%28app%29/administrador/layout.tsx"],"sourcesContent":["import * as React from 'react';\n\n// Este layout ahora es solo un contenedor pasivo.\n// Ya no importa UserNav ni nada que cause conflictos.\nexport default function AdminLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <div className=\"w-full h-full\">\n      {children}\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;AAIe,SAAS,YAAY,EAAE,QAAQ,EAAiC;IAC7E,qBACE,8OAAC;QAAI,WAAU;kBACZ;;;;;;AAGP","debugId":null}}]
+}
