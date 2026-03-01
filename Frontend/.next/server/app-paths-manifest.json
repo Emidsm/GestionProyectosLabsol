@@ -1,8 +1,6 @@
 {
-  "/(app)/administrador/solicitudes/page": "app/(app)/administrador/solicitudes/page.js",
   "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/estudiante/proyectos/[id]/page": "app/(app)/estudiante/proyectos/[id]/page.js",
   "/(app)/estudiante/proyectos/page": "app/(app)/estudiante/proyectos/page.js",
-  "/(app)/perfil/page": "app/(app)/perfil/page.js",
   "/page": "app/page.js"
 }

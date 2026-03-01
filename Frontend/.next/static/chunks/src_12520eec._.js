@@ -424,7 +424,7 @@ const mockProjects = [
         generalObjective: 'Desarrollar una herramienta accesible para pequeños agricultores que optimice el uso de agua.',
         expectedActivities: '1. Investigación de sensores. 2. Desarrollo de API. 3. Diseño de Dashboard.',
         category: 'Tecnología',
-        status: 'En desarrollo',
+        status: 'En lista de espera',
         solicitante: mockUsers[1],
         requiredSkills: [
             'Python',

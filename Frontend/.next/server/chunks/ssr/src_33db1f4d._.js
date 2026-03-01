@@ -64,7 +64,7 @@ const mockProjects = [
         generalObjective: 'Desarrollar una herramienta accesible para pequeños agricultores que optimice el uso de agua.',
         expectedActivities: '1. Investigación de sensores. 2. Desarrollo de API. 3. Diseño de Dashboard.',
         category: 'Tecnología',
-        status: 'En desarrollo',
+        status: 'En lista de espera',
         solicitante: mockUsers[1],
         requiredSkills: [
             'Python',
@@ -228,10 +228,10 @@ __turbopack_context__.s({
     "default": (()=>SolicitudesPage)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mock$2d$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/mock-data.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/button.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/card.tsx [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/cookie-utils.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-ssr] (ecmascript)");
 'use client';
 ;
@@ -241,25 +241,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 ;
 ;
 function SolicitudesPage() {
-    const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        const storedUser = localStorage.getItem('proconecta_user');
-        if (storedUser) {
-            setCurrentUser(JSON.parse(storedUser));
-        }
-    }, []);
-    if (!currentUser) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            children: "Cargando..."
-        }, void 0, false, {
-            fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-            lineNumber: 28,
-            columnNumber: 12
-        }, this);
+    // LECTURA DIRECTA: Sin useEffect, mucho más rápido.
+    const currentUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getUserFromCookies"])();
+    // Si estamos en el servidor (SSR), no hay usuario aún.
+    if ("TURBOPACK compile-time falsy", 0) {
+        "TURBOPACK unreachable";
     }
-    // Filtrar todos los proyectos de este solicitante
-    const userProjects = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mock$2d$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["mockProjects"].filter((p)=>p.solicitante.id === currentUser.id);
-    // Clasificación de proyectos
+    // Filtrar proyectos (Si es SSR, userProjects será vacío, no rompe nada)
+    const userProjects = currentUser ? __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mock$2d$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["mockProjects"].filter((p)=>p.solicitante.id === currentUser.id) : [];
     const draftProjects = userProjects.filter((p)=>p.status === 'Borrador');
     const rejectedProjects = userProjects.filter((p)=>p.status === 'Rechazado con retroalimentación');
     const activeProjects = userProjects.filter((p)=>[
@@ -278,7 +267,7 @@ function SolicitudesPage() {
                         children: "Mis Solicitudes"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 52,
+                        lineNumber: 45,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -286,13 +275,13 @@ function SolicitudesPage() {
                         children: "Gestione sus proyectos enviados, activos y el historial."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 55,
+                        lineNumber: 46,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                lineNumber: 51,
+                lineNumber: 44,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -303,7 +292,7 @@ function SolicitudesPage() {
                         children: "Solicitudes Activas"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 62,
+                        lineNumber: 53,
                         columnNumber: 9
                     }, this),
                     activeProjects.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -320,7 +309,7 @@ function SolicitudesPage() {
                                                     children: project.title
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                    lineNumber: 69,
+                                                    lineNumber: 60,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -328,32 +317,32 @@ function SolicitudesPage() {
                                                     children: project.status
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                    lineNumber: 71,
+                                                    lineNumber: 61,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 68,
+                                            lineNumber: 59,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 67,
+                                        lineNumber: 58,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                             className: "text-sm text-muted-foreground line-clamp-3",
-                                            children: project.abstract
+                                            children: project.description
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 77,
+                                            lineNumber: 67,
                                             columnNumber: 20
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 76,
+                                        lineNumber: 66,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardFooter"], {
@@ -366,41 +355,41 @@ function SolicitudesPage() {
                                                 children: "Ver detalles"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                lineNumber: 83,
+                                                lineNumber: 73,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 82,
+                                            lineNumber: 72,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 81,
+                                        lineNumber: 71,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, project.id, true, {
                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                lineNumber: 66,
+                                lineNumber: 57,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 64,
+                        lineNumber: 55,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "text-muted-foreground italic",
                         children: "No hay solicitudes activas."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 90,
+                        lineNumber: 80,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                lineNumber: 61,
+                lineNumber: 52,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -411,7 +400,7 @@ function SolicitudesPage() {
                         children: "Borradores"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 96,
+                        lineNumber: 86,
                         columnNumber: 9
                     }, this),
                     draftProjects.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -424,12 +413,12 @@ function SolicitudesPage() {
                                             children: project.title
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 102,
+                                            lineNumber: 92,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 101,
+                                        lineNumber: 91,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardFooter"], {
@@ -441,41 +430,41 @@ function SolicitudesPage() {
                                                 children: "Continuar Editando"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                lineNumber: 106,
+                                                lineNumber: 96,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 105,
+                                            lineNumber: 95,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 104,
+                                        lineNumber: 94,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, project.id, true, {
                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                lineNumber: 100,
+                                lineNumber: 90,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 98,
+                        lineNumber: 88,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "text-muted-foreground italic",
                         children: "No tiene borradores."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 113,
+                        lineNumber: 103,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                lineNumber: 95,
+                lineNumber: 85,
                 columnNumber: 7
             }, this),
             rejectedProjects.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -486,7 +475,7 @@ function SolicitudesPage() {
                         children: "Requieren Atención"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 120,
+                        lineNumber: 110,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -500,12 +489,12 @@ function SolicitudesPage() {
                                             children: project.title
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 125,
+                                            lineNumber: 115,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 124,
+                                        lineNumber: 114,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -515,21 +504,21 @@ function SolicitudesPage() {
                                                 children: "Retroalimentación:"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                lineNumber: 128,
+                                                lineNumber: 118,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-red-700",
-                                                children: "Revisar la sección de presupuesto y objetivos. Falta detalle en el cronograma."
+                                                children: project.feedback
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                lineNumber: 129,
+                                                lineNumber: 119,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 127,
+                                        lineNumber: 117,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardFooter"], {
@@ -541,34 +530,34 @@ function SolicitudesPage() {
                                                 children: "Corregir"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                lineNumber: 135,
+                                                lineNumber: 123,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 134,
+                                            lineNumber: 122,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 133,
+                                        lineNumber: 121,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, project.id, true, {
                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                lineNumber: 123,
+                                lineNumber: 113,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 121,
+                        lineNumber: 111,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                lineNumber: 119,
+                lineNumber: 109,
                 columnNumber: 9
             }, this),
             finishedProjects.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -579,7 +568,7 @@ function SolicitudesPage() {
                         children: "Historial Finalizado"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 147,
+                        lineNumber: 135,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -593,12 +582,12 @@ function SolicitudesPage() {
                                             children: project.title
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 152,
+                                            lineNumber: 140,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 151,
+                                        lineNumber: 139,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardFooter"], {
@@ -611,40 +600,40 @@ function SolicitudesPage() {
                                                 children: "Ver Resultados"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                                lineNumber: 156,
+                                                lineNumber: 144,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                            lineNumber: 155,
+                                            lineNumber: 143,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 154,
+                                        lineNumber: 142,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, project.id, true, {
                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                lineNumber: 150,
+                                lineNumber: 138,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                        lineNumber: 148,
+                        lineNumber: 136,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                lineNumber: 146,
+                lineNumber: 134,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-        lineNumber: 50,
+        lineNumber: 43,
         columnNumber: 5
     }, this);
 }

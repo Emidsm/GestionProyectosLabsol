@@ -1,0 +1,193 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  administrator
+  solicitante
+  estudiante
+}
+
+enum ProjectStatus {
+  borrador          
+  en_revision       
+  validado          
+  en_curso          
+  finalizado        
+  rechazado         
+}
+
+enum EnrollmentStatus {
+  pendiente         
+  aceptado          
+  rechazado         
+}
+
+enum NotificationType {
+  solicitud_aprobada
+  solicitud_rechazada
+  nuevo_integrante
+  proyecto_finalizado
+  mensaje_admin
+  cambio_estado
+  invitacion_proyecto
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id                  String         @id @default(cuid())
+  email               String         @unique
+  password            String         
+  name                String
+  role                Role           @default(estudiante)
+  avatarUrl           String?
+  phone               String?
+  company             String?
+  academicInstitution String?        
+  career              String?
+  
+  isBaseAdmin         Boolean        @default(false) 
+  mustChangePassword  Boolean        @default(false) 
+  isActive            Boolean        @default(true)  
+  
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  lastLoginAt         DateTime?
+
+  projectsCreated     Project[]      @relation("SolicitanteProjects")
+  enrollments         Enrollment[]
+  notifications       Notification[]
+  feedbackGiven       ProjectFeedback[] @relation("AdminFeedback")
+  
+  @@index([email])
+  @@index([role])
+}
+
+model Project {
+  id                  String            @id @default(cuid())
+  
+  title               String
+  abstract            String            
+  description         String            @db.Text 
+  category            String            
+  
+  status              ProjectStatus     @default(en_revision)
+  isFeatured          Boolean           @default(false)
+  
+  thumbnailUrl        String?
+  
+  requiredSkills      String[]          
+  timeline            String            
+  studentLimit        Int               @default(4) 
+  
+  solicitanteId       String
+  solicitante         User              @relation("SolicitanteProjects", fields: [solicitanteId], references: [id], onDelete: Cascade)
+  
+  isDeleted           Boolean           @default(false)
+  deletedAt           DateTime?
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  finalizedAt         DateTime?
+
+  enrollments         Enrollment[]
+  images              ProjectImage[]
+  feedback            ProjectFeedback[] 
+  
+  @@index([solicitanteId])
+  @@index([status])
+  @@index([category])
+  @@index([isFeatured])
+}
+
+model Enrollment {
+  id                  String            @id @default(cuid())
+  
+  studentId           String
+  student             User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  projectId           String
+  project             Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  status              EnrollmentStatus  @default(pendiente)
+  
+  enrolledAt          DateTime          @default(now())
+  acceptedAt          DateTime?
+  rejectedAt          DateTime?
+
+  @@unique([studentId, projectId])
+  @@index([projectId])
+  @@index([studentId])
+  @@index([status])
+}
+
+model ProjectImage {
+  id                  String   @id @default(cuid())
+  url                 String   
+  caption             String?
+  order               Int      @default(0) 
+  
+  projectId           String
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime @default(now())
+  
+  @@index([projectId])
+}
+
+model ProjectFeedback {
+  id                  String   @id @default(cuid())
+  
+  projectId           String
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  adminId             String
+  admin               User     @relation("AdminFeedback", fields: [adminId], references: [id], onDelete: Cascade)
+  
+  message             String   @db.Text
+  previousStatus      ProjectStatus?
+  newStatus           ProjectStatus  
+  
+  createdAt           DateTime @default(now())
+  
+  @@index([projectId])
+  @@index([adminId])
+}
+
+model Notification {
+  id                  String            @id @default(cuid())
+  
+  userId              String
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type                NotificationType
+  title               String
+  message             String
+  actionUrl           String?           
+  
+  isRead              Boolean           @default(false)
+  readAt              DateTime?
+  
+  metadata            Json?
+  
+  createdAt           DateTime          @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
