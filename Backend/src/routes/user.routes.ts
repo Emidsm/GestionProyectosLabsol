@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { getUsers, deleteUser } from '../controllers/user.controller';
-import { verifyToken, isAdmin } from '../middlewares/auth.middleware';
+import { getProfile, updateAvatar } from '../controllers/user.controller';
+import { verifyToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-// Rutas protegidas: Requieren token válido Y ser administrador
-router.get('/', verifyToken, isAdmin, getUsers);
-router.delete('/:id', verifyToken, isAdmin, deleteUser);
+// Rutas protegidas (requieren estar logueado)
+router.get('/profile', verifyToken, getProfile);
+router.put('/avatar', verifyToken, updateAvatar); // Ruta para guardar la imagen de MinIO
 
 export default router;

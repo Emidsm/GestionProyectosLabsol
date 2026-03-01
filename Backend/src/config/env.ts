@@ -6,5 +6,11 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL!,
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'super_secreto_para_desarrollo_proconecta',
-  jwtExpiresIn: '1d', // El token durará 1 día
+  jwtExpiresIn: '1d',
+  
+  minioEndpoint: process.env.MINIO_ENDPOINT || 'minio',
+  minioPort: parseInt(process.env.MINIO_PORT || '9000'),
+  minioAccessKey: process.env.MINIO_ACCESS_KEY || 'admin_proconecta',
+  minioSecretKey: process.env.MINIO_SECRET_KEY || 'superpassword123',
+  minioBucket: process.env.MINIO_BUCKET || 'proconecta-uploads',
 };

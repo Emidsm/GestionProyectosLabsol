@@ -1,38 +1,38 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { prisma } from '../config/database';
+import { AuthRequest } from '../middlewares/auth.middleware';
 
-// Obtener todos los usuarios activos
-export const getUsers = async (req: Request, res: Response) => {
+// Consultar el perfil propio
+export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const users = await prisma.user.findMany({
-      where: { isActive: true },
-      // Ocultamos la contraseña y mostramos solo lo relevante
-      select: { 
-        id: true, name: true, email: true, role: true, 
-        academicInstitution: true, company: true, createdAt: true 
-      },
-      orderBy: { createdAt: 'desc' }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user?.id },
+      select: { id: true, email: true, name: true, role: true, avatarUrl: true, company: true, career: true, academicInstitution: true }
     });
-    res.json(users);
+    res.json(user);
   } catch (error) {
-    console.error('Error en getUsers:', error);
-    res.status(500).json({ error: 'Error al obtener los usuarios' });
+    res.status(500).json({ error: 'Error al obtener el perfil' });
   }
 };
 
-// Desactivar un usuario (Soft Delete)
-export const deleteUser = async (req: Request, res: Response) => {
+// NUEVO: Actualizar el avatar del usuario
+export const updateAvatar = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { avatarUrl } = req.body;
+    
+    if (!avatarUrl) {
+      return res.status(400).json({ error: 'Se requiere la URL del avatar.' });
+    }
 
-    const user = await prisma.user.update({
-      where: { id },
-      data: { isActive: false }
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user?.id },
+      data: { avatarUrl },
+      select: { id: true, name: true, avatarUrl: true } // Solo devolvemos datos seguros
     });
 
-    res.json({ message: 'Usuario desactivado correctamente', user: { id: user.id, email: user.email } });
+    res.json({ message: 'Avatar actualizado correctamente', user: updatedUser });
   } catch (error) {
-    console.error('Error en deleteUser:', error);
-    res.status(500).json({ error: 'Error al desactivar el usuario' });
+    console.error('Error en updateAvatar:', error);
+    res.status(500).json({ error: 'Error al actualizar el avatar' });
   }
 };

@@ -131,3 +131,34 @@ export const reviewProject = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Error al evaluar el proyecto' });
   }
 };
+
+// NUEVO: Actualizar la imagen (thumbnail) del proyecto
+export const updateThumbnail = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    const { thumbnailUrl } = req.body;
+
+    if (!thumbnailUrl) {
+      return res.status(400).json({ error: 'Se requiere la URL de la imagen.' });
+    }
+
+    const project = await prisma.project.findUnique({ where: { id } });
+    if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
+
+    // Validar que solo el creador o un admin puedan cambiar la foto
+    if (project.solicitanteId !== userId && req.user?.role !== 'administrator') {
+      return res.status(403).json({ error: 'No tienes permiso para editar esta imagen.' });
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { id },
+      data: { thumbnailUrl }
+    });
+
+    res.json({ message: 'Imagen del proyecto actualizada', project: updatedProject });
+  } catch (error) {
+    console.error('Error en updateThumbnail:', error);
+    res.status(500).json({ error: 'Error al actualizar la imagen del proyecto' });
+  }
+};
