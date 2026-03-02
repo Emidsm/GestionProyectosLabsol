@@ -30,64 +30,68 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 ;
 function middleware(request) {
     const { pathname } = request.nextUrl;
-    // Get user data from cookie
-    const userCookie = request.cookies.get('proconecta_user');
-    const user = userCookie ? JSON.parse(userCookie.value) : null;
-    // Public routes that don't require authentication
+    // 1. Extraemos ambas cookies: el token de seguridad y los datos del usuario
+    const token = request.cookies.get('proconecta_token')?.value;
+    const userCookie = request.cookies.get('proconecta_user')?.value;
+    let user = null;
+    if (userCookie) {
+        try {
+            // Usamos decodeURIComponent porque al guardar la cookie usamos encodeURIComponent
+            user = JSON.parse(decodeURIComponent(userCookie));
+        } catch (e) {
+            user = null;
+        }
+    }
+    // Rutas públicas que no requieren autenticación
     const publicRoutes = [
         '/',
         '/register/student',
         '/register/solicitante'
     ];
     const isPublicRoute = publicRoutes.includes(pathname);
-    // If accessing public route and already logged in, redirect based on role
-    if (isPublicRoute && user) {
+    // 2. Si intenta acceder a ruta protegida sin autenticación completa -> al Login
+    if (!isPublicRoute && (!user || !token)) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/', request.url));
+    }
+    // 3. Si accede a ruta pública y YA está logueado -> Redirigir por defecto
+    if (isPublicRoute && user && token) {
         if (user.role === 'administrator') {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/administrador/solicitudes', request.url));
         }
-        // Both estudiante and solicitante go to dashboard
+        // Estudiantes y solicitantes van al dashboard por defecto
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/dashboard', request.url));
     }
-    // If accessing protected route without authentication, redirect to login
-    if (!isPublicRoute && !user) {
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/', request.url));
-    }
-    // Role-based route protection
-    if (user) {
-        // Admin routes - only administrators can access
+    // 4. Protección de rutas basada en roles
+    if (user && token) {
+        // Lógica del Dashboard: Admins no deben ver el dashboard genérico
+        if (pathname === '/dashboard' && user.role === 'administrator') {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/administrador/solicitudes', request.url));
+        }
+        // Nota: Como no hay ningún "if" que bloquee la ruta '/perfil', 
+        // los 3 roles podrán acceder a ella sin problemas.
+        // Rutas exclusivas de Administrador
         if (pathname.startsWith('/administrador') && user.role !== 'administrator') {
-            // Non-admins trying to access admin routes go to their appropriate dashboard
             if (user.role === 'estudiante') {
-                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/estudiante/proyectos', request.url));
+                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/dashboard', request.url));
             }
             if (user.role === 'solicitante') {
-                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/solicitante/solicitudes', request.url));
+                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/dashboard', request.url));
             }
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/dashboard', request.url));
         }
-        // Solicitante routes - only solicitantes can access
+        // Rutas exclusivas de Solicitante
         if (pathname.startsWith('/solicitante') && user.role !== 'solicitante') {
             if (user.role === 'administrator') {
                 return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/administrador/solicitudes', request.url));
             }
-            if (user.role === 'estudiante') {
-                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/estudiante/proyectos', request.url));
-            }
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/dashboard', request.url));
         }
-        // Estudiante routes - only estudiantes can access
+        // Rutas exclusivas de Estudiante
         if (pathname.startsWith('/estudiante') && user.role !== 'estudiante') {
             if (user.role === 'administrator') {
                 return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/administrador/solicitudes', request.url));
             }
-            if (user.role === 'solicitante') {
-                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/solicitante/solicitudes', request.url));
-            }
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/dashboard', request.url));
-        }
-        // Dashboard redirect logic - admins shouldn't access generic dashboard
-        if (pathname === '/dashboard' && user.role === 'administrator') {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/administrador/solicitudes', request.url));
         }
     }
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$spec$2d$extension$2f$response$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].next();

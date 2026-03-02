@@ -366,7 +366,9 @@ var { g: global, __dirname, k: __turbopack_refresh__, m: module } = __turbopack_
 {
 __turbopack_context__.s({
     "clearUserCookie": (()=>clearUserCookie),
+    "getTokenFromCookies": (()=>getTokenFromCookies),
     "getUserFromCookies": (()=>getUserFromCookies),
+    "setTokenCookie": (()=>setTokenCookie),
     "setUserCookie": (()=>setUserCookie)
 });
 function getUserFromCookies() {
@@ -387,14 +389,30 @@ function setUserCookie(user) {
     if ("TURBOPACK compile-time falsy", 0) {
         "TURBOPACK unreachable";
     }
-    // SameSite=Lax permite que la cookie persista en navegaciones normales
     document.cookie = `proconecta_user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
+}
+function setTokenCookie(token) {
+    if ("TURBOPACK compile-time falsy", 0) {
+        "TURBOPACK unreachable";
+    }
+    document.cookie = `proconecta_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+}
+function getTokenFromCookies() {
+    if ("TURBOPACK compile-time falsy", 0) {
+        "TURBOPACK unreachable";
+    }
+    const cookies = document.cookie.split('; ');
+    const tokenCookie = cookies.find((row)=>row.startsWith('proconecta_token='));
+    if (!tokenCookie) return null;
+    return tokenCookie.split('=')[1];
 }
 function clearUserCookie() {
     if ("TURBOPACK compile-time falsy", 0) {
         "TURBOPACK unreachable";
     }
+    // Limpiamos tanto el usuario como el token
     document.cookie = 'proconecta_user=; path=/; max-age=0';
+    document.cookie = 'proconecta_token=; path=/; max-age=0';
     localStorage.removeItem('proconecta_user');
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {

@@ -1,6 +1,21 @@
 {
+  "/(app)/administrador/perfil/page": "app/(app)/administrador/perfil/page.js",
+  "/(app)/administrador/proyectos/[id]/editar/page": "app/(app)/administrador/proyectos/[id]/editar/page.js",
+  "/(app)/administrador/proyectos/[id]/page": "app/(app)/administrador/proyectos/[id]/page.js",
+  "/(app)/administrador/proyectos/page": "app/(app)/administrador/proyectos/page.js",
+  "/(app)/administrador/solicitudes/[id]/page": "app/(app)/administrador/solicitudes/[id]/page.js",
+  "/(app)/administrador/solicitudes/page": "app/(app)/administrador/solicitudes/page.js",
+  "/(app)/administrador/usuarios/[id]/page": "app/(app)/administrador/usuarios/[id]/page.js",
+  "/(app)/administrador/usuarios/page": "app/(app)/administrador/usuarios/page.js",
   "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/estudiante/proyectos/[id]/page": "app/(app)/estudiante/proyectos/[id]/page.js",
   "/(app)/estudiante/proyectos/page": "app/(app)/estudiante/proyectos/page.js",
-  "/page": "app/page.js"
+  "/(app)/perfil/page": "app/(app)/perfil/page.js",
+  "/(app)/solicitante/proyectos/[id]/page": "app/(app)/solicitante/proyectos/[id]/page.js",
+  "/(app)/solicitante/solicitudes/[id]/editar/page": "app/(app)/solicitante/solicitudes/[id]/editar/page.js",
+  "/(app)/solicitante/solicitudes/[id]/page": "app/(app)/solicitante/solicitudes/[id]/page.js",
+  "/(app)/solicitante/solicitudes/crear/page": "app/(app)/solicitante/solicitudes/crear/page.js",
+  "/(app)/solicitante/solicitudes/page": "app/(app)/solicitante/solicitudes/page.js",
+  "/page": "app/page.js",
+  "/register/solicitante/page": "app/register/solicitante/page.js"
 }

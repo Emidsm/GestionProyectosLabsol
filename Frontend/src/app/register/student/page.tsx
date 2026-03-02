@@ -89,13 +89,45 @@ export default function StudentRegisterPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Registro Exitoso",
-      description: "Tu cuenta ha sido creada. Por favor, inicia sesión.",
-    });
-    router.push("/");
+  const { isSubmitting } = form.formState; // <-- Agrega esto debajo de la definición de form
+
+  const { isSubmitting } = form.formState; // <-- Agrega esto
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.fullName,
+          email: values.email,
+          password: values.password,
+          role: "estudiante",
+          phone: values.phone,
+          academicInstitution: values.institution, // Mapeado a Prisma
+          municipality: values.municipality,       // Mapeado a Prisma
+          career: values.major                     // Mapeado a Prisma
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al registrar la cuenta.");
+      }
+
+      toast({
+        title: "Registro Exitoso",
+        description: "Tu cuenta ha sido creada. Por favor, inicia sesión.",
+      });
+      router.push("/");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error en el registro",
+        description: error.message,
+      });
+    }
   }
 
   return (
@@ -245,8 +277,8 @@ export default function StudentRegisterPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Crear Cuenta
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
           </form>
         </Form>

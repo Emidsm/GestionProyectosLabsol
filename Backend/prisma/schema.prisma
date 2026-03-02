@@ -57,9 +57,16 @@ model User {
   role                Role           @default(estudiante)
   avatarUrl           String?
   phone               String?
+  
+  // Solicitante
   company             String?
+  jobTitle            String?        // ← AGREGADO
+  activity            String?        // ← AGREGADO (giro/actividad del SRS)
+  
+  // Estudiante
   academicInstitution String?        
   career              String?
+  municipality        String?        // ← AGREGADO
   
   isBaseAdmin         Boolean        @default(false) 
   mustChangePassword  Boolean        @default(false) 

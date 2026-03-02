@@ -16,9 +16,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { mockUsers } from "@/lib/mock-data";
 import Image from "next/image";
-import { setUserCookie } from "@/lib/cookie-utils";
+import { setUserCookie, setTokenCookie } from "@/lib/cookie-utils";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Por favor, ingresa un correo válido." }),
@@ -40,36 +39,41 @@ export default function LoginPage() {
   const { isSubmitting } = form.formState;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Pequeño delay artificial para UX
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      // Petición real al backend
+      const response = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
 
-    const user = mockUsers.find((u) => u.email === values.email);
+      const data = await response.json();
 
-    if (user) {
-      // 🔒 SEGURIDAD: Separamos la contraseña para NO guardarla
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userSafe } = user;
+      if (!response.ok) {
+        throw new Error(data.error || "Error al iniciar sesión");
+      }
 
-      // Usamos la utilidad centralizada
-      setUserCookie(userSafe as any);
+      // Guardamos el usuario y el token de forma segura en las cookies
+      setUserCookie(data.user);
+      setTokenCookie(data.token);
 
       toast({
         title: "Inicio de Sesión Exitoso",
-        description: `¡Bienvenido, ${user.name}! Redirigiendo...`,
+        description: `¡Bienvenido, ${data.user.name}! Redirigiendo...`,
       });
       
-      if (user.role === 'administrator') {
-        router.push("/administrador/solicitudes");
-      } else if (user.role === 'solicitante') {
-        router.push("/dashboard");
+      // Redirección dinámica basada en los roles que configuramos en Prisma
+      // Redirección dinámica 
+      if (data.user.role === 'administrator') {
+        router.push("/administrador/solicitudes"); 
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard"); // Estudiantes y solicitantes van aquí por defecto
       }
-    } else {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Inicio de Sesión Fallido",
-        description: "Correo o contraseña inválidos. Por favor, intenta de nuevo.",
+        description: error.message || "Correo o contraseña inválidos. Por favor, intenta de nuevo.",
       });
     }
   }

@@ -316,7 +316,9 @@ var { g: global, __dirname } = __turbopack_context__;
 {
 __turbopack_context__.s({
     "clearUserCookie": (()=>clearUserCookie),
+    "getTokenFromCookies": (()=>getTokenFromCookies),
     "getUserFromCookies": (()=>getUserFromCookies),
+    "setTokenCookie": (()=>setTokenCookie),
     "setUserCookie": (()=>setUserCookie)
 });
 function getUserFromCookies() {
@@ -326,6 +328,16 @@ function getUserFromCookies() {
 function setUserCookie(user) {
     if ("TURBOPACK compile-time truthy", 1) return;
     "TURBOPACK unreachable";
+}
+function setTokenCookie(token) {
+    if ("TURBOPACK compile-time truthy", 1) return;
+    "TURBOPACK unreachable";
+}
+function getTokenFromCookies() {
+    if ("TURBOPACK compile-time truthy", 1) return null;
+    "TURBOPACK unreachable";
+    const cookies = undefined;
+    const tokenCookie = undefined;
 }
 function clearUserCookie() {
     if ("TURBOPACK compile-time truthy", 1) return;

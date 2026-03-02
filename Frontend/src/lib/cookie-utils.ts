@@ -1,9 +1,5 @@
 import type { User } from './types';
 
-/**
- * Obtiene el usuario de las cookies de forma segura (Client-side).
- * Retorna null durante SSR para evitar errores de hidratación inicial.
- */
 export function getUserFromCookies(): User | null {
   if (typeof window === 'undefined') return null;
   
@@ -20,21 +16,31 @@ export function getUserFromCookies(): User | null {
   }
 }
 
-/**
- * Guarda la cookie del usuario (Client-side).
- * Asegúrate de pasar el objeto 'user' SIN contraseña.
- */
 export function setUserCookie(user: User): void {
   if (typeof window === 'undefined') return;
-  // SameSite=Lax permite que la cookie persista en navegaciones normales
   document.cookie = `proconecta_user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
 }
 
-/**
- * Elimina la cookie y limpia localStorage (Logout).
- */
+// NUEVO: Guardar el token JWT
+export function setTokenCookie(token: string): void {
+  if (typeof window === 'undefined') return;
+  document.cookie = `proconecta_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+}
+
+// NUEVO: Obtener el token (útil para inyectarlo en las cabeceras de tus fetch)
+export function getTokenFromCookies(): string | null {
+  if (typeof window === 'undefined') return null;
+  const cookies = document.cookie.split('; ');
+  const tokenCookie = cookies.find(row => row.startsWith('proconecta_token='));
+  
+  if (!tokenCookie) return null;
+  return tokenCookie.split('=')[1];
+}
+
 export function clearUserCookie(): void {
   if (typeof window === 'undefined') return;
+  // Limpiamos tanto el usuario como el token
   document.cookie = 'proconecta_user=; path=/; max-age=0';
+  document.cookie = 'proconecta_token=; path=/; max-age=0';
   localStorage.removeItem('proconecta_user');
 }

@@ -4,19 +4,20 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
-const fontBody = Inter({
+// Configuramos las fuentes nativas de Next.js
+const inter = Inter({ 
   subsets: ["latin"],
-  variable: "--font-body",
+  variable: "--font-inter",
 });
 
-const fontHeadline = Space_Grotesk({
+const spaceGrotesk = Space_Grotesk({ 
   subsets: ["latin"],
-  variable: "--font-headline",
+  variable: "--font-space-grotesk",
 });
 
 export const metadata: Metadata = {
-  title: "Sistema de proyectos",
-  description: "Conectando estudiantes con mejores proyectos",
+  title: "ProConecta | Sistema de Proyectos",
+  description: "Plataforma integral para la gestión y vinculación de proyectos tecnológicos.",
 };
 
 export default function RootLayout({
@@ -26,13 +27,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-body antialiased",
-          fontBody.variable,
-          fontHeadline.variable
-        )}
-      >
+      {/* Inyectamos las variables de las fuentes en el body */}
+      <body className={cn(
+        "min-h-screen bg-background font-sans antialiased",
+        inter.variable,
+        spaceGrotesk.variable
+      )}>
         {children}
         <Toaster />
       </body>

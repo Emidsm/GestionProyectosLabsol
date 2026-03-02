@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { mockProjects } from '@/lib/mock-data';
+import { getProjects, STATUS_LABELS, type ApiProject } from '@/lib/api';
+import { getUserFromCookies } from '@/lib/cookie-utils';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,34 +11,41 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getUserFromCookies } from '@/lib/cookie-utils';
 import Link from 'next/link';
 
 export default function SolicitudesPage() {
-  // LECTURA DIRECTA: Sin useEffect, mucho más rápido.
   const currentUser = getUserFromCookies();
+  const [projects, setProjects] = React.useState<ApiProject[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  // Si estamos en el servidor (SSR), no hay usuario aún.
-  if (typeof window !== 'undefined' && !currentUser) {
-    return <div className="p-8 text-center text-muted-foreground">Cargando información...</div>;
+  React.useEffect(() => {
+    if (!currentUser) return;
+    getProjects()
+      .then((data) => {
+        // Solo los proyectos del solicitante actual
+        setProjects(data.filter((p) => p.solicitanteId === currentUser.id));
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">Cargando solicitudes...</div>
+    );
   }
 
-  // Filtrar proyectos (Si es SSR, userProjects será vacío, no rompe nada)
-  const userProjects = currentUser 
-    ? mockProjects.filter((p) => p.solicitante.id === currentUser.id)
-    : [];
+  if (error) {
+    return <div className="p-8 text-center text-destructive">Error: {error}</div>;
+  }
 
-  const draftProjects = userProjects.filter((p) => p.status === 'Borrador');
-  
-  const rejectedProjects = userProjects.filter(
-    (p) => p.status === 'Rechazado con retroalimentación'
+  const draftProjects = projects.filter((p) => p.status === 'borrador');
+  const rejectedProjects = projects.filter((p) => p.status === 'rechazado');
+  const activeProjects = projects.filter((p) =>
+    ['en_curso', 'validado', 'en_revision'].includes(p.status)
   );
-  
-  const activeProjects = userProjects.filter((p) => 
-    ['En desarrollo', 'En lista de espera', 'En revisión'].includes(p.status)
-  );
-
-  const finishedProjects = userProjects.filter((p) => p.status === 'Finalizado');
+  const finishedProjects = projects.filter((p) => p.status === 'finalizado');
 
   return (
     <div className="space-y-8">
@@ -48,7 +56,7 @@ export default function SolicitudesPage() {
         </p>
       </div>
 
-      {/* --- SECCIÓN: EN PROCESO / ACTIVOS --- */}
+      {/* ACTIVOS */}
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold">Solicitudes Activas</h2>
         {activeProjects.length > 0 ? (
@@ -58,19 +66,19 @@ export default function SolicitudesPage() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{project.title}</CardTitle>
-                    <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">
-                      {project.status}
+                    <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800 whitespace-nowrap ml-2">
+                      {STATUS_LABELS[project.status]}
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent>
-                   <p className="text-sm text-muted-foreground line-clamp-3">
-                     {project.description}
-                   </p>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {project.abstract || project.description}
+                  </p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" asChild className="w-full">
-                    <Link href={`/solicitante/proyectos/${project.id}`}>Ver detalles</Link>
+                    <Link href={`/solicitante/solicitudes/${project.id}`}>Ver detalles</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -81,19 +89,24 @@ export default function SolicitudesPage() {
         )}
       </div>
 
-      {/* --- SECCIÓN: BORRADORES --- */}
+      {/* BORRADORES */}
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold">Borradores</h2>
         {draftProjects.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {draftProjects.map((project) => (
-              <Card key={project.id} className="opacity-80 hover:opacity-100 transition-opacity">
+              <Card
+                key={project.id}
+                className="opacity-80 hover:opacity-100 transition-opacity"
+              >
                 <CardHeader>
                   <CardTitle>{project.title}</CardTitle>
                 </CardHeader>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href={`/solicitante/proyectos/${project.id}/editar`}>Continuar Editando</Link>
+                    <Link href={`/solicitante/solicitudes/${project.id}/editar`}>
+                      Continuar Editando
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -104,7 +117,7 @@ export default function SolicitudesPage() {
         )}
       </div>
 
-      {/* --- SECCIÓN: RECHAZADAS --- */}
+      {/* RECHAZADOS */}
       {rejectedProjects.length > 0 && (
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-red-600">Requieren Atención</h2>
@@ -115,12 +128,16 @@ export default function SolicitudesPage() {
                   <CardTitle className="text-red-900">{project.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-semibold text-red-800">Retroalimentación:</p>
-                  <p className="text-red-700">{project.feedback}</p>
+                  <p className="font-semibold text-red-800 text-sm">
+                    Este proyecto fue rechazado. Revisa la retroalimentación del administrador
+                    y corrígelo.
+                  </p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="destructive" asChild>
-                    <Link href={`/solicitante/proyectos/${project.id}/editar`}>Corregir</Link>
+                    <Link href={`/solicitante/solicitudes/${project.id}/editar`}>
+                      Corregir
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -129,7 +146,7 @@ export default function SolicitudesPage() {
         </div>
       )}
 
-      {/* --- SECCIÓN: FINALIZADOS --- */}
+      {/* FINALIZADOS */}
       {finishedProjects.length > 0 && (
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold">Historial Finalizado</h2>
@@ -141,7 +158,9 @@ export default function SolicitudesPage() {
                 </CardHeader>
                 <CardFooter>
                   <Button variant="secondary" asChild className="w-full">
-                    <Link href={`/solicitante/proyectos/${project.id}`}>Ver Resultados</Link>
+                    <Link href={`/solicitante/solicitudes/${project.id}`}>
+                      Ver Resultados
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

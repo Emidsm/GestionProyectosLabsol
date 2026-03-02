@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { getProfile, updateAvatar } from '../controllers/user.controller';
-import { verifyToken } from '../middlewares/auth.middleware';
+import { getProfile, updateAvatar, updateProfile, getAllUsers } from '../controllers/user.controller';
+import { verifyToken, isAdmin } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-// Rutas protegidas (requieren estar logueado)
 router.get('/profile', verifyToken, getProfile);
-router.put('/avatar', verifyToken, updateAvatar); // Ruta para guardar la imagen de MinIO
+router.put('/profile', verifyToken, updateProfile);       // NUEVO: editar perfil propio
+router.put('/avatar', verifyToken, updateAvatar);
+router.get('/', verifyToken, isAdmin, getAllUsers);        // NUEVO: lista todos (solo admin)
 
 export default router;
