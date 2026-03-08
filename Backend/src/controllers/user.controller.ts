@@ -24,11 +24,18 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 export const updateAvatar = async (req: AuthRequest, res: Response) => {
   try {
     const { avatarUrl } = req.body;
-    if (!avatarUrl) return res.status(400).json({ error: 'Se requiere la URL del avatar.' });
+    
+    // Solo bloqueamos si el campo no viene en absoluto en la petición
+    if (avatarUrl === undefined) {
+      return res.status(400).json({ error: 'Se requiere el campo avatarUrl.' });
+    }
+
+    // Si mandan un string vacío, lo convertimos a null para limpiar Prisma limpiamente
+    const finalAvatarUrl = avatarUrl === "" ? null : avatarUrl;
 
     const updatedUser = await prisma.user.update({
       where: { id: req.user?.id },
-      data: { avatarUrl },
+      data: { avatarUrl: finalAvatarUrl },
       select: { id: true, name: true, avatarUrl: true }
     });
 

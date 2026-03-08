@@ -9,13 +9,22 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { getUserFromCookies } from '@/lib/cookie-utils';
 import { Bell } from 'lucide-react';
-// 1. IMPORTANTE: Importa tu componente aquí
-import { SiteFooter } from '@/components/site-footer'; 
+import { SiteFooter } from '@/components/site-footer';
+import type { User } from '@/lib/types';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminSection = pathname.startsWith('/administrador');
-  const user = getUserFromCookies();
+  
+  const [user, setUser] = React.useState<User | null>(null);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  // Solución al error de Hidratación:
+  React.useEffect(() => {
+    setIsMounted(true);
+    setUser(getUserFromCookies());
+  }, []);
+
   const isUserSolicitante = user?.role === 'solicitante';
 
   return (
@@ -37,8 +46,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               />
             </Link>
 
-            {/* Menú de navegación (Solo si NO es admin) */}
-            {!isAdminSection && (
+            {/* Menú de navegación (Solo si NO es admin Y el componente ya se montó) */}
+            {!isAdminSection && isMounted && (
               <nav className="hidden md:flex items-center ml-8 space-x-6 text-sm font-medium">
                 {isUserSolicitante ? (
                   <>
@@ -53,6 +62,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 )}
                 <a href="mailto:RafaelUribeC@outlook.com" className="transition-colors hover:text-primary text-muted-foreground">Contacto</a>
               </nav>
+            )}
+            {/* Skeleton simple para los enlaces mientras hidrata */}
+            {!isAdminSection && !isMounted && (
+               <nav className="hidden md:flex items-center ml-8 space-x-6">
+                 <div className="h-4 w-12 bg-muted animate-pulse rounded"></div>
+                 <div className="h-4 w-20 bg-muted animate-pulse rounded"></div>
+               </nav>
             )}
           </div>
 
@@ -81,8 +97,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </main>
 
-      {/* 2. AQUÍ VA EL FOOTER */}
-      {/* Usamos !isAdminSection para que SOLO salga en el Dashboard de estudiantes/solicitantes */}
+      {/* FOOTER */}
       {!isAdminSection && <SiteFooter />}
 
     </div>

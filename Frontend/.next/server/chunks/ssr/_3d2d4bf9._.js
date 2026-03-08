@@ -111,17 +111,18 @@ async function getMyProfile() {
     return apiFetch('/api/users/profile');
 }
 async function updateAvatar(avatarUrl) {
+    // Si mandamos un string vacío desde el frontend, lo forzamos a null
+    // para que Prisma entienda que queremos borrar el campo.
+    const finalUrl = avatarUrl === "" ? null : avatarUrl;
     return apiFetch('/api/users/avatar', {
         method: 'PUT',
         body: JSON.stringify({
-            avatarUrl
+            avatarUrl: finalUrl
         })
     });
 }
-async function uploadImage(file) {
+async function uploadImage(formData) {
     const token = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getTokenFromCookies"])();
-    const formData = new FormData();
-    formData.append('image', file);
     const res = await fetch(`${API_URL}/api/upload/image`, {
         method: 'POST',
         headers: token ? {
@@ -508,7 +509,7 @@ function AdminReviewSolicitudPage() {
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
     const [project, setProject] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [enrollments, setEnrollments] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [feedback, setFeedback] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
+    const [feedbackInput, setFeedbackInput] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
     const [submitting, setSubmitting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -530,7 +531,8 @@ function AdminReviewSolicitudPage() {
             });
         }).finally(()=>setLoading(false));
     }, [
-        id
+        id,
+        toast
     ]);
     const handleApprove = async ()=>{
         if (!project) return;
@@ -556,7 +558,7 @@ function AdminReviewSolicitudPage() {
     };
     const handleReject = async ()=>{
         if (!project) return;
-        if (!feedback.trim()) {
+        if (!feedbackInput.trim()) {
             toast({
                 variant: 'destructive',
                 title: 'Error',
@@ -568,7 +570,7 @@ function AdminReviewSolicitudPage() {
         try {
             await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["reviewProject"])(project.id, {
                 status: 'rechazado',
-                feedbackMessage: feedback
+                feedbackMessage: feedbackInput
             });
             toast({
                 variant: 'destructive',
@@ -592,7 +594,7 @@ function AdminReviewSolicitudPage() {
             children: "Cargando..."
         }, void 0, false, {
             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-            lineNumber: 116,
+            lineNumber: 121,
             columnNumber: 12
         }, this);
     }
@@ -613,19 +615,19 @@ function AdminReviewSolicitudPage() {
                             className: "mr-2 h-4 w-4"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                            lineNumber: 134,
+                            lineNumber: 139,
                             columnNumber: 11
                         }, this),
                         " Volver"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                    lineNumber: 133,
+                    lineNumber: 138,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                lineNumber: 132,
+                lineNumber: 137,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -638,7 +640,7 @@ function AdminReviewSolicitudPage() {
                                 children: "Revisión de Solicitud"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 140,
+                                lineNumber: 145,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -646,13 +648,13 @@ function AdminReviewSolicitudPage() {
                                 children: "Detalles de la propuesta enviada."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 141,
+                                lineNumber: 146,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                        lineNumber: 139,
+                        lineNumber: 144,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -661,16 +663,16 @@ function AdminReviewSolicitudPage() {
                         children: statusLabel
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                        lineNumber: 143,
+                        lineNumber: 148,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                lineNumber: 138,
+                lineNumber: 143,
                 columnNumber: 7
             }, this),
-            project.status === 'rechazado' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
+            project.status === 'rechazado' && project.feedback && project.feedback.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                 className: "bg-red-50 border-red-200",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardHeader"], {
@@ -682,49 +684,73 @@ function AdminReviewSolicitudPage() {
                                     className: "h-5 w-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                    lineNumber: 156,
+                                    lineNumber: 161,
                                     columnNumber: 15
                                 }, this),
                                 "Motivos del Rechazo"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                            lineNumber: 155,
+                            lineNumber: 160,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                        lineNumber: 154,
+                        lineNumber: 159,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
+                        className: "space-y-3",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-red-700 font-medium",
                                 children: "Retroalimentación registrada:"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 161,
+                                lineNumber: 166,
                                 columnNumber: 13
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-red-600 mt-1 text-sm",
-                                children: "Consulta el historial de feedback del proyecto para ver los motivos detallados."
-                            }, void 0, false, {
-                                fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 162,
-                                columnNumber: 13
-                            }, this)
+                            project.feedback.map((fb)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "bg-white/60 p-3 rounded border border-red-100 text-sm text-red-900",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                            className: "whitespace-pre-wrap",
+                                            children: fb.message
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                            lineNumber: 169,
+                                            columnNumber: 18
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-xs text-red-500 block mt-2",
+                                            children: new Date(fb.createdAt).toLocaleDateString('es-MX', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                            lineNumber: 170,
+                                            columnNumber: 18
+                                        }, this)
+                                    ]
+                                }, fb.id || fb.createdAt, true, {
+                                    fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                    lineNumber: 168,
+                                    columnNumber: 16
+                                }, this))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                        lineNumber: 160,
+                        lineNumber: 165,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                lineNumber: 153,
+                lineNumber: 158,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -740,12 +766,12 @@ function AdminReviewSolicitudPage() {
                                             children: "Información del Proyecto"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                            lineNumber: 174,
+                                            lineNumber: 184,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 173,
+                                        lineNumber: 183,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -758,60 +784,12 @@ function AdminReviewSolicitudPage() {
                                                         children: "Título"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 178,
+                                                        lineNumber: 188,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         className: "text-lg font-medium",
                                                         children: project.title
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 179,
-                                                        columnNumber: 17
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 177,
-                                                columnNumber: 15
-                                            }, this),
-                                            project.abstract && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
-                                                        className: "text-muted-foreground",
-                                                        children: "Resumen"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 183,
-                                                        columnNumber: 19
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-sm",
-                                                        children: project.abstract
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 184,
-                                                        columnNumber: 19
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 182,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
-                                                        className: "text-muted-foreground",
-                                                        children: "Descripción Detallada"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 188,
-                                                        columnNumber: 17
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "whitespace-pre-wrap text-sm",
-                                                        children: project.description
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
                                                         lineNumber: 189,
@@ -823,6 +801,54 @@ function AdminReviewSolicitudPage() {
                                                 lineNumber: 187,
                                                 columnNumber: 15
                                             }, this),
+                                            project.abstract && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                                        className: "text-muted-foreground",
+                                                        children: "Resumen"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                                        lineNumber: 193,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "text-sm",
+                                                        children: project.abstract
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                                        lineNumber: 194,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                                lineNumber: 192,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                                        className: "text-muted-foreground",
+                                                        children: "Descripción Detallada"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                                        lineNumber: 198,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "whitespace-pre-wrap text-sm",
+                                                        children: project.description
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                                        lineNumber: 199,
+                                                        columnNumber: 17
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
+                                                lineNumber: 197,
+                                                columnNumber: 15
+                                            }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
@@ -830,7 +856,7 @@ function AdminReviewSolicitudPage() {
                                                         children: "Habilidades Requeridas"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 192,
+                                                        lineNumber: 202,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -840,30 +866,30 @@ function AdminReviewSolicitudPage() {
                                                                 children: s
                                                             }, s, false, {
                                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                                lineNumber: 195,
+                                                                lineNumber: 205,
                                                                 columnNumber: 21
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 193,
+                                                        lineNumber: 203,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 191,
+                                                lineNumber: 201,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 176,
+                                        lineNumber: 186,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 172,
+                                lineNumber: 182,
                                 columnNumber: 11
                             }, this),
                             enrollments.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -876,7 +902,7 @@ function AdminReviewSolicitudPage() {
                                                     className: "h-5 w-5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                    lineNumber: 209,
+                                                    lineNumber: 219,
                                                     columnNumber: 19
                                                 }, this),
                                                 "Estudiantes Inscritos (",
@@ -885,12 +911,12 @@ function AdminReviewSolicitudPage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                            lineNumber: 208,
+                                            lineNumber: 218,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 207,
+                                        lineNumber: 217,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -905,7 +931,7 @@ function AdminReviewSolicitudPage() {
                                                                 children: enr.student.name
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                                lineNumber: 220,
+                                                                lineNumber: 230,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -913,7 +939,7 @@ function AdminReviewSolicitudPage() {
                                                                 children: enr.student.email
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                                lineNumber: 221,
+                                                                lineNumber: 231,
                                                                 columnNumber: 23
                                                             }, this),
                                                             enr.student.career && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -921,13 +947,13 @@ function AdminReviewSolicitudPage() {
                                                                 children: enr.student.career
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                                lineNumber: 223,
+                                                                lineNumber: 233,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 219,
+                                                        lineNumber: 229,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -935,30 +961,30 @@ function AdminReviewSolicitudPage() {
                                                         children: enr.status
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 226,
+                                                        lineNumber: 236,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, enr.id, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 215,
+                                                lineNumber: 225,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 213,
+                                        lineNumber: 223,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 206,
+                                lineNumber: 216,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                        lineNumber: 171,
+                        lineNumber: 181,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -972,12 +998,12 @@ function AdminReviewSolicitudPage() {
                                             children: "Datos del Solicitante"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                            lineNumber: 248,
+                                            lineNumber: 258,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 247,
+                                        lineNumber: 257,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -990,7 +1016,7 @@ function AdminReviewSolicitudPage() {
                                                         className: "h-4 w-4 text-muted-foreground"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 252,
+                                                        lineNumber: 262,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -998,13 +1024,13 @@ function AdminReviewSolicitudPage() {
                                                         children: project.solicitante.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 253,
+                                                        lineNumber: 263,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 251,
+                                                lineNumber: 261,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1012,7 +1038,7 @@ function AdminReviewSolicitudPage() {
                                                 children: project.solicitante.email
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 255,
+                                                lineNumber: 265,
                                                 columnNumber: 15
                                             }, this),
                                             project.solicitante.company && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1024,7 +1050,7 @@ function AdminReviewSolicitudPage() {
                                                             children: "Empresa:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                            lineNumber: 259,
+                                                            lineNumber: 269,
                                                             columnNumber: 21
                                                         }, this),
                                                         ' ',
@@ -1032,24 +1058,24 @@ function AdminReviewSolicitudPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                    lineNumber: 258,
+                                                    lineNumber: 268,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 257,
+                                                lineNumber: 267,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 250,
+                                        lineNumber: 260,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 246,
+                                lineNumber: 256,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -1060,12 +1086,12 @@ function AdminReviewSolicitudPage() {
                                             children: "Logística"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                            lineNumber: 269,
+                                            lineNumber: 279,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 268,
+                                        lineNumber: 278,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1079,7 +1105,7 @@ function AdminReviewSolicitudPage() {
                                                         children: "Duración:"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 273,
+                                                        lineNumber: 283,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1087,13 +1113,13 @@ function AdminReviewSolicitudPage() {
                                                         children: project.timeline
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 274,
+                                                        lineNumber: 284,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 272,
+                                                lineNumber: 282,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1104,7 +1130,7 @@ function AdminReviewSolicitudPage() {
                                                         children: "Cupo:"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 277,
+                                                        lineNumber: 287,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1115,13 +1141,13 @@ function AdminReviewSolicitudPage() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 278,
+                                                        lineNumber: 288,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 276,
+                                                lineNumber: 286,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1132,7 +1158,7 @@ function AdminReviewSolicitudPage() {
                                                         children: "Categoría:"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 281,
+                                                        lineNumber: 291,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1140,13 +1166,13 @@ function AdminReviewSolicitudPage() {
                                                         children: project.category
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 282,
+                                                        lineNumber: 292,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 280,
+                                                lineNumber: 290,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1157,7 +1183,7 @@ function AdminReviewSolicitudPage() {
                                                         children: "Creado:"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 285,
+                                                        lineNumber: 295,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1165,25 +1191,25 @@ function AdminReviewSolicitudPage() {
                                                         children: new Date(project.createdAt).toLocaleDateString('es-MX')
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 286,
+                                                        lineNumber: 296,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 284,
+                                                lineNumber: 294,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 271,
+                                        lineNumber: 281,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 267,
+                                lineNumber: 277,
                                 columnNumber: 11
                             }, this),
                             project.status === 'en_revision' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1198,14 +1224,14 @@ function AdminReviewSolicitudPage() {
                                                 className: "mr-2 h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 301,
+                                                lineNumber: 311,
                                                 columnNumber: 17
                                             }, this),
                                             submitting ? 'Procesando...' : 'Aprobar Solicitud'
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 296,
+                                        lineNumber: 306,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -1221,19 +1247,19 @@ function AdminReviewSolicitudPage() {
                                                             className: "mr-2 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                            lineNumber: 308,
+                                                            lineNumber: 318,
                                                             columnNumber: 21
                                                         }, this),
                                                         " Rechazar..."
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                    lineNumber: 307,
+                                                    lineNumber: 317,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 306,
+                                                lineNumber: 316,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogContent"], {
@@ -1244,30 +1270,30 @@ function AdminReviewSolicitudPage() {
                                                                 children: "Rechazar Solicitud"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                                lineNumber: 313,
+                                                                lineNumber: 323,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                                                 children: "Indica las razones del rechazo para que el solicitante pueda corregirlas."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                                lineNumber: 314,
+                                                                lineNumber: 324,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 312,
+                                                        lineNumber: 322,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Textarea"], {
                                                         placeholder: "Ej: El objetivo no es claro, falta definir las actividades...",
-                                                        value: feedback,
-                                                        onChange: (e)=>setFeedback(e.target.value),
+                                                        value: feedbackInput,
+                                                        onChange: (e)=>setFeedbackInput(e.target.value),
                                                         className: "min-h-[100px]"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 319,
+                                                        lineNumber: 329,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -1278,48 +1304,48 @@ function AdminReviewSolicitudPage() {
                                                             children: submitting ? 'Enviando...' : 'Confirmar Rechazo'
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                            lineNumber: 326,
+                                                            lineNumber: 336,
                                                             columnNumber: 21
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                        lineNumber: 325,
+                                                        lineNumber: 335,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                                lineNumber: 311,
+                                                lineNumber: 321,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                        lineNumber: 305,
+                                        lineNumber: 315,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                                lineNumber: 295,
+                                lineNumber: 305,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                        lineNumber: 245,
+                        lineNumber: 255,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-                lineNumber: 169,
+                lineNumber: 179,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/administrador/solicitudes/[id]/page.tsx",
-        lineNumber: 131,
+        lineNumber: 136,
         columnNumber: 5
     }, this);
 }

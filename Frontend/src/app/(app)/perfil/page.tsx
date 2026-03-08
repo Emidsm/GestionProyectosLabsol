@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { getUserFromCookies, setUserCookie } from '@/lib/cookie-utils';
-import { getMyProfile, updateProfile, type ApiUser } from '@/lib/api';
+import { getMyProfile, updateProfile, updateAvatar, uploadImage, type ApiUser } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,11 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
-import { Building, Phone, Briefcase, GraduationCap, Edit, MapPin } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Building, Phone, Briefcase, GraduationCap, Edit, MapPin, Camera, Upload, Link as LinkIcon, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
@@ -23,6 +27,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = React.useState(true);
   const [isEditing, setIsEditing] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+  const [isAvatarUpdating, setIsAvatarUpdating] = React.useState(false);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Form state
   const [phone, setPhone] = React.useState('');
@@ -61,7 +68,6 @@ export default function ProfilePage() {
 
       const { user: updated } = await updateProfile(payload);
       setUser(updated);
-      // Actualizar cookie para que el middleware y componentes la lean
       setUserCookie(updated as any);
       toast({ title: 'Perfil actualizado', description: 'Tus cambios se guardaron correctamente.' });
       setIsEditing(false);
@@ -72,11 +78,81 @@ export default function ProfilePage() {
     }
   };
 
+  // --- LÓGICA DE ACTUALIZACIÓN DE FOTO ---
+  const handleSaveAvatarUrl = async (newUrl: string | null) => {
+    if (!user) return;
+    setIsAvatarUpdating(true);
+    try {
+      // Usamos el endpoint que construiste
+      const updatedUser = await updateAvatar(newUrl || ""); 
+      
+      // Actualizamos el estado local
+      const newUserState = { ...user, avatarUrl: newUrl };
+      setUser(newUserState);
+      
+      // ¡ESTO ES CLAVE! Actualizamos la cookie para que la barra de navegación (UserNav) reaccione
+      setUserCookie(newUserState as any);
+      
+      toast({ title: 'Foto actualizada', description: 'Tu foto de perfil se ha guardado.' });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar la foto.' });
+    } finally {
+      setIsAvatarUpdating(false);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsAvatarUpdating(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      // Subimos a MinIO
+      const uploadResponse = await uploadImage(formData);
+      
+      // Actualizamos el perfil con la URL de MinIO
+      await handleSaveAvatarUrl(uploadResponse.url);
+      
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error al subir', description: 'Ocurrió un problema con MinIO.' });
+      setIsAvatarUpdating(false);
+    }
+    
+    // Limpiamos el input para poder subir la misma foto si queremos
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handlePromptLink = () => {
+    const url = window.prompt("Pega el enlace de tu nueva imagen:");
+    if (url) {
+      // Recordatorio: Si es externa, debe estar en next.config.ts
+      handleSaveAvatarUrl(url);
+    }
+  };
+
+  const handleDeleteAvatar = () => {
+    if (window.confirm("¿Seguro que quieres eliminar tu foto de perfil?")) {
+      handleSaveAvatarUrl(null);
+    }
+  };
+
   if (loading) return <div className="p-8">Cargando perfil...</div>;
   if (!user) return <div className="p-8">No se pudo cargar el perfil.</div>;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* INPUT OCULTO PARA SUBIR ARCHIVOS */}
+      <input 
+        type="file" 
+        accept="image/*" 
+        className="hidden" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+      />
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold font-headline">Mi Perfil</h1>
@@ -144,11 +220,44 @@ export default function ProfilePage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-6 items-start">
+            
             <div className="flex flex-col items-center gap-2">
-              <Avatar className="h-24 w-24 border-4 border-muted">
-                <AvatarImage src={user.avatarUrl} />
-                <AvatarFallback className="text-2xl">{user.name[0]}</AvatarFallback>
-              </Avatar>
+              {/* MAGIA DE LA FOTO DE PERFIL AQUÍ */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="relative group cursor-pointer rounded-full overflow-hidden h-24 w-24 border-4 border-muted">
+                    <Avatar className="h-full w-full transition-all duration-300 group-hover:brightness-50 group-hover:blur-[1px]">
+                      <AvatarImage src={user.avatarUrl || undefined} className="object-cover" />
+                      <AvatarFallback className="text-2xl">{user.name[0]}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {isAvatarUpdating ? (
+                        <Loader2 className="h-6 w-6 text-white animate-spin" />
+                      ) : (
+                        <Camera className="h-6 w-6 text-white" />
+                      )}
+                    </div>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-48">
+                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Subir desde PC
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handlePromptLink}>
+                    <LinkIcon className="mr-2 h-4 w-4" /> Usar un enlace
+                  </DropdownMenuItem>
+                  {user.avatarUrl && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleDeleteAvatar} className="text-red-600 focus:bg-red-50">
+                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar foto
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Badge variant="secondary" className="uppercase mt-2">{user.role}</Badge>
             </div>
 

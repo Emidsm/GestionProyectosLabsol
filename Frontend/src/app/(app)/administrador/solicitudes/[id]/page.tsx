@@ -34,14 +34,19 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+// Extendemos el tipo localmente
+interface ProjectWithFeedback extends ApiProject {
+  feedback?: { id: string; message: string; createdAt: string }[];
+}
+
 export default function AdminReviewSolicitudPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
 
-  const [project, setProject] = React.useState<ApiProject | null>(null);
+  const [project, setProject] = React.useState<ProjectWithFeedback | null>(null);
   const [enrollments, setEnrollments] = React.useState<ApiEnrollment[]>([]);
-  const [feedback, setFeedback] = React.useState('');
+  const [feedbackInput, setFeedbackInput] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -57,14 +62,14 @@ export default function AdminReviewSolicitudPage() {
       .then(([projects, enr]) => {
         const found = projects.find((p) => p.id === id);
         if (!found) return;
-        setProject(found);
+        setProject(found as ProjectWithFeedback);
         setEnrollments(enr);
       })
       .catch((err) => {
         toast({ variant: 'destructive', title: 'Error', description: err.message });
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, toast]);
 
   const handleApprove = async () => {
     if (!project) return;
@@ -85,7 +90,7 @@ export default function AdminReviewSolicitudPage() {
 
   const handleReject = async () => {
     if (!project) return;
-    if (!feedback.trim()) {
+    if (!feedbackInput.trim()) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -97,7 +102,7 @@ export default function AdminReviewSolicitudPage() {
     try {
       await reviewProject(project.id, {
         status: 'rechazado',
-        feedbackMessage: feedback,
+        feedbackMessage: feedbackInput,
       });
       toast({
         variant: 'destructive',
@@ -148,8 +153,8 @@ export default function AdminReviewSolicitudPage() {
         </Badge>
       </div>
 
-      {/* Motivos del rechazo si ya fue rechazado */}
-      {project.status === 'rechazado' && (
+      {/* HISTORIAL DE RECHAZOS (AHORA SÍ MUESTRA EL FEEDBACK REAL) */}
+      {project.status === 'rechazado' && project.feedback && project.feedback.length > 0 && (
         <Card className="bg-red-50 border-red-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-red-800 flex items-center gap-2">
@@ -157,11 +162,16 @@ export default function AdminReviewSolicitudPage() {
               Motivos del Rechazo
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <p className="text-red-700 font-medium">Retroalimentación registrada:</p>
-            <p className="text-red-600 mt-1 text-sm">
-              Consulta el historial de feedback del proyecto para ver los motivos detallados.
-            </p>
+            {project.feedback.map((fb) => (
+               <div key={fb.id || fb.createdAt} className="bg-white/60 p-3 rounded border border-red-100 text-sm text-red-900">
+                 <p className="whitespace-pre-wrap">{fb.message}</p>
+                 <span className="text-xs text-red-500 block mt-2">
+                   {new Date(fb.createdAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                 </span>
+               </div>
+            ))}
           </CardContent>
         </Card>
       )}
@@ -318,8 +328,8 @@ export default function AdminReviewSolicitudPage() {
                   </DialogHeader>
                   <Textarea
                     placeholder="Ej: El objetivo no es claro, falta definir las actividades..."
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
+                    value={feedbackInput}
+                    onChange={(e) => setFeedbackInput(e.target.value)}
                     className="min-h-[100px]"
                   />
                   <DialogFooter>

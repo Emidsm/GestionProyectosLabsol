@@ -28,7 +28,7 @@ export default function SolicitudesPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentUser]);
 
   if (loading) {
     return (
@@ -129,14 +129,14 @@ export default function SolicitudesPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-semibold text-red-800 text-sm">
-                    Este proyecto fue rechazado. Revisa la retroalimentación del administrador
-                    y corrígelo.
+                    Este proyecto fue rechazado por un administrador.
                   </p>
                 </CardContent>
                 <CardFooter>
+                  {/* CAMBIO: Ahora manda a los detalles, no directo a editar */}
                   <Button variant="destructive" asChild>
-                    <Link href={`/solicitante/solicitudes/${project.id}/editar`}>
-                      Corregir
+                    <Link href={`/solicitante/solicitudes/${project.id}`}>
+                      Ver motivos
                     </Link>
                   </Button>
                 </CardFooter>

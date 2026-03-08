@@ -112,17 +112,18 @@ async function getMyProfile() {
     return apiFetch('/api/users/profile');
 }
 async function updateAvatar(avatarUrl) {
+    // Si mandamos un string vacío desde el frontend, lo forzamos a null
+    // para que Prisma entienda que queremos borrar el campo.
+    const finalUrl = avatarUrl === "" ? null : avatarUrl;
     return apiFetch('/api/users/avatar', {
         method: 'PUT',
         body: JSON.stringify({
-            avatarUrl
+            avatarUrl: finalUrl
         })
     });
 }
-async function uploadImage(file) {
+async function uploadImage(formData) {
     const token = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getTokenFromCookies"])();
-    const formData = new FormData();
-    formData.append('image', file);
     const res = await fetch(`${API_URL}/api/upload/image`, {
         method: 'POST',
         headers: token ? {
@@ -300,7 +301,9 @@ function SolicitudesPage() {
                 "SolicitudesPage.useEffect": ()=>setLoading(false)
             }["SolicitudesPage.useEffect"]);
         }
-    }["SolicitudesPage.useEffect"], []);
+    }["SolicitudesPage.useEffect"], [
+        currentUser
+    ]);
     if (loading) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "p-8 text-center text-muted-foreground",
@@ -575,7 +578,7 @@ function SolicitudesPage() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                             className: "font-semibold text-red-800 text-sm",
-                                            children: "Este proyecto fue rechazado. Revisa la retroalimentación del administrador y corrígelo."
+                                            children: "Este proyecto fue rechazado por un administrador."
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
                                             lineNumber: 131,
@@ -591,8 +594,8 @@ function SolicitudesPage() {
                                             variant: "destructive",
                                             asChild: true,
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                                href: `/solicitante/solicitudes/${project.id}/editar`,
-                                                children: "Corregir"
+                                                href: `/solicitante/solicitudes/${project.id}`,
+                                                children: "Ver motivos"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
                                                 lineNumber: 138,
@@ -605,7 +608,7 @@ function SolicitudesPage() {
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/solicitante/solicitudes/page.tsx",
-                                        lineNumber: 136,
+                                        lineNumber: 135,
                                         columnNumber: 17
                                     }, this)
                                 ]

@@ -8,11 +8,19 @@ import { getProjects, type ApiProject } from '@/lib/api';
 import { getUserFromCookies } from '@/lib/cookie-utils';
 
 export default function DashboardPage() {
-  const user = getUserFromCookies();
-  const isSolicitante = user?.role === 'solicitante';
+  const [isMounted, setIsMounted] = React.useState(false);
+  const [isSolicitante, setIsSolicitante] = React.useState(false);
   const [finishedProjects, setFinishedProjects] = React.useState<ApiProject[]>([]);
 
   React.useEffect(() => {
+    // 1. Evitamos el error de hidratación
+    setIsMounted(true);
+    
+    // 2. Leemos las cookies solo cuando estamos seguros de estar en el cliente
+    const user = getUserFromCookies();
+    setIsSolicitante(user?.role === 'solicitante');
+
+    // 3. Traemos los proyectos
     getProjects()
       .then((data) => {
         setFinishedProjects(data.filter((p) => p.status === 'finalizado').slice(0, 3));
@@ -35,18 +43,25 @@ export default function DashboardPage() {
                   Plataforma integral para la gestión y vinculación de proyectos tecnológicos.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Button asChild size="lg">
-                  <Link
-                    href={
-                      isSolicitante
-                        ? '/solicitante/solicitudes/crear'
-                        : '/estudiante/proyectos'
-                    }
-                  >
-                    {isSolicitante ? 'Subir un proyecto' : 'Inscribirme en un proyecto'}
-                  </Link>
-                </Button>
+              <div className="flex flex-col gap-2 min-[400px]:flex-row h-12">
+                {/* Mostramos un esqueleto mientras carga para evitar parpadeos */}
+                {!isMounted ? (
+                  <Button size="lg" disabled className="w-56 bg-muted text-muted-foreground animate-pulse">
+                    Cargando...
+                  </Button>
+                ) : (
+                  <Button asChild size="lg">
+                    <Link
+                      href={
+                        isSolicitante
+                          ? '/solicitante/solicitudes/crear'
+                          : '/estudiante/proyectos'
+                      }
+                    >
+                      {isSolicitante ? 'Subir un proyecto' : 'Inscribirme en un proyecto'}
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
             <Image
@@ -55,6 +70,7 @@ export default function DashboardPage() {
               height={400}
               alt="Hero"
               className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
+              priority
             />
           </div>
         </div>

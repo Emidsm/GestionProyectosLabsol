@@ -237,11 +237,15 @@ export async function getMyProfile(): Promise<ApiUser> {
 
 /** PUT /api/users/avatar — actualiza el avatar del usuario */
 export async function updateAvatar(
-  avatarUrl: string
+  avatarUrl: string | null
 ): Promise<{ message: string; user: ApiUser }> {
+  // Si mandamos un string vacío desde el frontend, lo forzamos a null
+  // para que Prisma entienda que queremos borrar el campo.
+  const finalUrl = avatarUrl === "" ? null : avatarUrl;
+  
   return apiFetch('/api/users/avatar', {
     method: 'PUT',
-    body: JSON.stringify({ avatarUrl }),
+    body: JSON.stringify({ avatarUrl: finalUrl }),
   });
 }
 
@@ -251,17 +255,15 @@ export async function updateAvatar(
 
 /**
  * POST /api/upload/image — sube una imagen a MinIO.
- * Usa FormData (no JSON), por eso no usa apiFetch.
+ * Ahora recibe directamente el FormData que armamos en la UI.
  */
-export async function uploadImage(file: File): Promise<{ url: string }> {
+export async function uploadImage(formData: FormData): Promise<{ url: string }> {
   const token = getTokenFromCookies();
-  const formData = new FormData();
-  formData.append('image', file);
 
   const res = await fetch(`${API_URL}/api/upload/image`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
+    body: formData, // Mandamos el FormData directo, sin reempaquetar
   });
 
   if (!res.ok) {

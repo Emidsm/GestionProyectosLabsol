@@ -10,6 +10,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gestion_proyectos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio:latest
@@ -18,11 +23,16 @@ services:
       MINIO_ROOT_USER: admin_proconecta
       MINIO_ROOT_PASSWORD: superpassword123
     ports:
-      - "9000:9000" # Puerto de la API
-      - "9001:9001" # Puerto de la Consola web
+      - "9000:9000" # API
+      - "9001:9001" # Consola
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -34,7 +44,6 @@ services:
       PORT: 3001
       NODE_ENV: development
       JWT_SECRET: super_secreto_para_desarrollo_proconecta
-      # Variables para conectar con MinIO
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: admin_proconecta
@@ -43,11 +52,14 @@ services:
     volumes:
       - ./Backend:/app
       - /app/node_modules
-    ports:
+    ports: # <--- Asegúrate de que esté alineado con "environment" y "volumes"
       - "3001:3001"
+      - "5555:5555" 
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
 
 volumes:
   postgres_data:

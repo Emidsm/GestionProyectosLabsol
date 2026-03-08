@@ -8,15 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Edit, Clock, XCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Clock, XCircle, MessageSquareWarning } from 'lucide-react';
 import Link from 'next/link';
+
+// Extendemos temporalmente la interfaz aquí por si no la has actualizado en api.ts
+interface ProjectWithFeedback extends ApiProject {
+  feedback?: { message: string; createdAt: string }[];
+}
 
 export default function SolicitanteRequestDetailsPage() {
   const params = useParams();
   const user = getUserFromCookies();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const [project, setProject] = React.useState<ApiProject | null>(null);
+  const [project, setProject] = React.useState<ProjectWithFeedback | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [notOwner, setNotOwner] = React.useState(false);
 
@@ -25,16 +30,16 @@ export default function SolicitanteRequestDetailsPage() {
     getProjects()
       .then((data) => {
         const found = data.find((p) => p.id === id);
-        if (!found) return; // notFound() se llama abajo
+        if (!found) return;
         if (user && found.solicitanteId !== user.id) {
           setNotOwner(true);
           return;
         }
-        setProject(found);
+        setProject(found as ProjectWithFeedback);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
   if (loading) {
     return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
@@ -74,19 +79,32 @@ export default function SolicitanteRequestDetailsPage() {
         )}
       </div>
 
-      {/* Alerta si fue rechazado */}
+      {/* Alerta si fue rechazado CON RETROALIMENTACIÓN */}
       {project.status === 'rechazado' && (
-        <Card className="bg-red-50 border-red-200">
+        <Card className="bg-red-50 border-red-200 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-red-800 flex items-center gap-2">
               <XCircle className="h-5 w-5" /> Atención Requerida
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <p className="text-red-700 font-medium">
-              Tu proyecto fue rechazado por el administrador. Edítalo y envíalo de nuevo a
-              revisión para que sea evaluado.
+              Revisa los detalles a continuación y corrígelos para enviarlo de nuevo.
             </p>
+            
+            {/* Caja de comentarios del Admin */}
+            {project.feedback && project.feedback.length > 0 && (
+              <div className="bg-white/60 p-4 rounded-md border border-red-200/60 flex items-start gap-3">
+                <MessageSquareWarning className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                <div>
+                  <h4 className="font-bold text-red-900 text-sm mb-1">Mensaje del administrador:</h4>
+                  <p className="text-red-800 text-sm whitespace-pre-line">
+                    {/* Mostramos el mensaje más reciente (asumiendo que el backend los ordena o el último es el índice 0) */}
+                    {project.feedback[0].message}
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

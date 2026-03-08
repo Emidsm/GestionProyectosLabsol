@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getUserFromCookies, clearUserCookie } from '@/lib/cookie-utils';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import type { User } from '@/lib/types';
@@ -21,14 +21,9 @@ export function UserNav() {
   const [user, setUser] = React.useState<User | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
 
-  // EFECTO DE HIDRATACIÓN: 
-  // Esperamos a que el componente se monte para leer la cookie.
-  // Esto evita el error de "Hydration failed" porque el primer render
-  // en el cliente coincidirá con el del servidor (ambos null/loading).
   React.useEffect(() => {
     setIsMounted(true);
-    const u = getUserFromCookies();
-    setUser(u);
+    setUser(getUserFromCookies());
   }, []);
 
   const handleLogout = () => {
@@ -36,8 +31,6 @@ export function UserNav() {
     router.push('/');
   };
 
-  // MIENTRAS CARGA (Skeleton):
-  // Mostramos un avatar gris para que la interfaz no "salte" ni parpadee.
   if (!isMounted || !user) {
     return (
       <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled>
@@ -61,6 +54,8 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
+            {/* Si el usuario tiene foto en MinIO, la mostramos. Si no, usamos las iniciales. */}
+            <AvatarImage src={user.avatarUrl || ''} alt={user.name} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {initials}
             </AvatarFallback>

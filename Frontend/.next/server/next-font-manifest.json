@@ -9,8 +9,8 @@
       "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2"
     ],
     "[project]/src/app/(app)/administrador/proyectos/[id]/page": [
-      "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2",
-      "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2"
+      "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2",
+      "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2"
     ],
     "[project]/src/app/(app)/administrador/proyectos/page": [
       "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2",
@@ -23,10 +23,6 @@
     "[project]/src/app/(app)/administrador/solicitudes/page": [
       "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2",
       "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2"
-    ],
-    "[project]/src/app/(app)/administrador/usuarios/[id]/page": [
-      "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2",
-      "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2"
     ],
     "[project]/src/app/(app)/administrador/usuarios/page": [
       "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2",
@@ -69,10 +65,6 @@
       "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2"
     ],
     "[project]/src/app/page": [
-      "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2",
-      "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2"
-    ],
-    "[project]/src/app/register/solicitante/page": [
       "static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2",
       "static/media/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU-s.p.db698206.woff2"
     ]

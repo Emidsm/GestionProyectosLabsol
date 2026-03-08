@@ -434,17 +434,18 @@ async function getMyProfile() {
     return apiFetch('/api/users/profile');
 }
 async function updateAvatar(avatarUrl) {
+    // Si mandamos un string vacío desde el frontend, lo forzamos a null
+    // para que Prisma entienda que queremos borrar el campo.
+    const finalUrl = avatarUrl === "" ? null : avatarUrl;
     return apiFetch('/api/users/avatar', {
         method: 'PUT',
         body: JSON.stringify({
-            avatarUrl
+            avatarUrl: finalUrl
         })
     });
 }
-async function uploadImage(file) {
+async function uploadImage(formData) {
     const token = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cookie$2d$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getTokenFromCookies"])();
-    const formData = new FormData();
-    formData.append('image', file);
     const res = await fetch(`${API_URL}/api/upload/image`, {
         method: 'POST',
         headers: token ? {

@@ -65,7 +65,10 @@ export const getProjects = async (req: Request, res: Response) => {
   try {
     const projects = await prisma.project.findMany({
       where: { isDeleted: false },
-      include: { solicitante: { select: { name: true, email: true, company: true } } },
+      include: { 
+        solicitante: { select: { name: true, email: true, company: true } },
+        feedback: { orderBy: { createdAt: 'desc' } } // <-- AÑADIMOS ESTO PARA QUE VIAJE LA RETROALIMENTACIÓN
+      },
       orderBy: { createdAt: 'desc' }
     });
     res.json(projects);
