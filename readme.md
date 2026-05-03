@@ -6,7 +6,7 @@ Este es un proyecto **open source** elaborado específicamente para **gestionar 
 Lo único que necesitas tener instalado en tu equipo es **Docker** y **Docker Compose**. De todo lo demás se encarga el entorno.
 
 **Instrucciones de arranque**
-Para levantar todo el changarro (base de datos, almacenamiento, backend y frontend), abre tu terminal en la raíz del proyecto y ejecuta **docker-compose -f docker-compose.dev.yml up -d --build**.
+Para levantar todo (base de datos, almacenamiento, backend y frontend), abre tu terminal en la raíz del proyecto y ejecuta **docker-compose -f docker-compose.dev.yml up -d --build**.
 
 Una vez que los contenedores estén arriba, el siguiente paso es construir la estructura de la base de datos. Para hacer esto, corre el comando **docker exec -it gestion-backend npx prisma migrate deploy**.
 
