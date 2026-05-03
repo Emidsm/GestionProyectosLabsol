@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gestion_proyectos
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
       MINIO_ROOT_PASSWORD: superpassword123
     ports:
       - "9000:9000" # API
-      - "9001:9001" # Consola
+      - "9003:9001" # Consola
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -52,7 +52,7 @@ services:
     volumes:
       - ./Backend:/app
       - /app/node_modules
-    ports: # <--- Asegúrate de que esté alineado con "environment" y "volumes"
+    ports: 
       - "3001:3001"
       - "5555:5555" 
     depends_on:
@@ -60,6 +60,23 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  frontend:
+    build:
+      context: ./Frontend
+      target: development
+    container_name: gestion-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "9002:9002"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

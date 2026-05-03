@@ -89,9 +89,7 @@ export default function StudentRegisterPage() {
     },
   });
 
-  const { isSubmitting } = form.formState; // <-- Agrega esto debajo de la definición de form
-
-  const { isSubmitting } = form.formState; // <-- Agrega esto
+  const { isSubmitting } = form.formState;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
