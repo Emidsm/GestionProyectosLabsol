@@ -1,3 +1,5 @@
+// src/components/user-nav.tsx
+
 'use client';
 
 import * as React from 'react';
@@ -12,18 +14,30 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getUserFromCookies, clearUserCookie } from '@/lib/cookie-utils';
+import { getUserFromCookies, clearUserCookie, setUserCookie } from '@/lib/cookie-utils';
+import { getMyProfile } from '@/lib/api'; // <--- NUEVO IMPORT
 import { LogOut, User as UserIcon } from 'lucide-react';
-import type { User } from '@/lib/types';
+import type { ApiUser } from '@/lib/api'; // Usamos tu tipo de API
 
 export function UserNav() {
   const router = useRouter();
-  const [user, setUser] = React.useState<User | null>(null);
+  const [user, setUser] = React.useState<ApiUser | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
     setIsMounted(true);
-    setUser(getUserFromCookies());
+    
+    // Primero cargamos de la cookie para no mostrar el skeleton tanto tiempo
+    const cookieUser = getUserFromCookies();
+    if (cookieUser) setUser(cookieUser as unknown as ApiUser);
+
+    // INMEDIATAMENTE pedimos la versión real al servidor
+    getMyProfile()
+      .then((freshUser) => {
+        setUser(freshUser);
+        setUserCookie(freshUser as any); // Sincronizamos la cookie por si acaso
+      })
+      .catch((err) => console.error("Error al sincronizar nav:", err));
   }, []);
 
   const handleLogout = () => {
@@ -54,7 +68,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            {/* Si el usuario tiene foto en MinIO, la mostramos. Si no, usamos las iniciales. */}
+            {/* Ahora user.avatarUrl vendrá directo del servidor */}
             <AvatarImage src={user.avatarUrl || ''} alt={user.name} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {initials}
@@ -62,6 +76,7 @@ export function UserNav() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
+      {/* ... resto del menú igual */}
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
@@ -72,12 +87,10 @@ export function UserNav() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
         <DropdownMenuItem onClick={() => router.push(profileLink)} className="cursor-pointer">
           <UserIcon className="mr-2 h-4 w-4" />
           Perfil
         </DropdownMenuItem>
-        
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />

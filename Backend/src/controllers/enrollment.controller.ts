@@ -135,3 +135,64 @@ export const reviewEnrollment = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Error al evaluar la inscripción' });
   }
 };
+
+// NUEVO: Obtener todas las inscripciones pendientes globales (Para el dashboard del admin)
+export const getAllPendingEnrollments = async (req: AuthRequest, res: Response) => {
+  try {
+    const enrollments = await prisma.enrollment.findMany({
+      where: {
+        status: 'pendiente'
+      },
+      include: {
+        student: {
+          select: { 
+            id: true, 
+            name: true, 
+            email: true, 
+            career: true, 
+            academicInstitution: true,
+            avatarUrl: true
+          }
+        },
+        project: {
+          select: { 
+            id: true, 
+            title: true,
+            solicitante: {
+              select: { name: true }
+            }
+          }
+        }
+      },
+      orderBy: {
+        enrolledAt: 'desc'
+      }
+    });
+    
+    res.json(enrollments);
+  } catch (error) {
+    console.error('Error en getAllPendingEnrollments:', error);
+    res.status(500).json({ error: 'Error al obtener inscripciones pendientes globales' });
+  }
+};
+export const getMyEnrollments = async (req: Request, res: Response) => {
+  try {
+    // Asumiendo que tu auth.middleware.ts inyecta el usuario en req.user
+    const userId = req.user?.id; 
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'No autorizado' });
+    }
+
+    const myEnrollments = await prisma.enrollment.findMany({
+      where: { studentId: userId },
+      // Traemos también el proyecto para tener la data completa si se requiere
+      include: { project: true } 
+    });
+
+    res.json(myEnrollments);
+  } catch (error) {
+    console.error('Error fetching my enrollments:', error);
+    res.status(500).json({ error: 'Error al obtener tus inscripciones' });
+  }
+};

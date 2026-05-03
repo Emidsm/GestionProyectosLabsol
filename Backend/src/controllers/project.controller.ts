@@ -3,33 +3,53 @@ import { prisma } from '../config/database';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import { sendNotification } from '../utils/notifications';
 
+// ============================================================
+// CREAR PROYECTO
+// ============================================================
 export const createProject = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const userRole = req.user?.role;
 
-    if (userRole === 'estudiante') return res.status(403).json({ error: 'Los estudiantes no pueden crear proyectos.' });
+    if (userRole === 'estudiante') {
+      return res.status(403).json({ error: 'Los estudiantes no pueden crear proyectos.' });
+    }
 
     const { title, abstract, description, category, requiredSkills, timeline, studentLimit, status } = req.body;
+    
     const validInitialStatuses = ['borrador', 'en_revision'];
     const projectStatus = status && validInitialStatuses.includes(status) ? status : 'borrador';
 
     const project = await prisma.project.create({
       data: {
-        title, abstract, description, category, timeline,
+        title,
+        abstract,
+        description,
+        category,
+        timeline,
         requiredSkills: requiredSkills || [],
         studentLimit: studentLimit || 4,
         solicitanteId: userId as string,
         status: projectStatus,
       },
+      // Incluimos al solicitante para que el frontend reciba la data completa de una vez
+      include: {
+        solicitante: { 
+          select: { name: true, email: true, company: true, avatarUrl: true } 
+        }
+      }
     });
 
     res.status(201).json({ message: `Proyecto guardado como ${projectStatus}`, project });
   } catch (error) {
+    console.error('Error en createProject:', error);
     res.status(500).json({ error: 'Error al crear el proyecto' });
   }
 };
 
+// ============================================================
+// ACTUALIZAR PROYECTO
+// ============================================================
 export const updateProject = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -39,10 +59,12 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
     const project = await prisma.project.findUnique({ where: { id } });
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
+    // Permisos: Solo dueño o Admin
     if (project.solicitanteId !== userId && req.user?.role !== 'administrator') {
-      return res.status(403).json({ error: 'No tienes permiso para editar' });
+      return res.status(403).json({ error: 'No tienes permiso para editar este proyecto.' });
     }
 
+    // Lógica de estados editables
     if (project.status !== 'borrador' && project.status !== 'rechazado') {
       return res.status(400).json({ error: 'Solo puedes editar proyectos en borrador o rechazados.' });
     }
@@ -52,36 +74,52 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
 
     const updatedProject = await prisma.project.update({
       where: { id },
-      data: { title, abstract, description, category, requiredSkills, timeline, studentLimit, status: newStatus }
+      data: { 
+        title, abstract, description, category, requiredSkills, timeline, studentLimit, 
+        status: newStatus 
+      },
+      include: {
+        solicitante: { select: { name: true, email: true, company: true, avatarUrl: true } }
+      }
     });
 
     res.json({ message: 'Proyecto actualizado correctamente', project: updatedProject });
   } catch (error) {
+    console.error('Error en updateProject:', error);
     res.status(500).json({ error: 'Error al actualizar el proyecto' });
   }
 };
 
+// ============================================================
+// OBTENER TODOS LOS PROYECTOS (Catálogo)
+// ============================================================
 export const getProjects = async (req: Request, res: Response) => {
   try {
     const projects = await prisma.project.findMany({
       where: { isDeleted: false },
       include: { 
-        solicitante: { select: { name: true, email: true, company: true } },
-        feedback: { orderBy: { createdAt: 'desc' } } // <-- AÑADIMOS ESTO PARA QUE VIAJE LA RETROALIMENTACIÓN
+        // CLAVE: Incluir avatarUrl para que las ProjectCards no salgan vacías[cite: 1, 10]
+        solicitante: { 
+          select: { name: true, email: true, company: true, avatarUrl: true } 
+        }, 
+        feedback: { orderBy: { createdAt: 'desc' } }
       },
       orderBy: { createdAt: 'desc' }
     });
     res.json(projects);
   } catch (error) {
+    console.error('Error en getProjects:', error);
     res.status(500).json({ error: 'Error al obtener los proyectos' });
   }
 };
 
-// NUEVO: Administrador evalúa el proyecto
+// ============================================================
+// REVISIÓN DE ADMINISTRADOR (Aprobar/Rechazar)
+// ============================================================
 export const reviewProject = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, feedbackMessage } = req.body; // status esperado: 'validado' o 'rechazado'
+    const { status, feedbackMessage } = req.body; 
     const adminId = req.user?.id;
 
     if (status !== 'validado' && status !== 'rechazado') {
@@ -95,13 +133,14 @@ export const reviewProject = async (req: AuthRequest, res: Response) => {
     const project = await prisma.project.findUnique({ where: { id } });
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
-    // Actualizar el estado del proyecto
     const updatedProject = await prisma.project.update({
       where: { id },
-      data: { status }
+      data: { status },
+      include: {
+        solicitante: { select: { name: true, email: true, company: true, avatarUrl: true } }
+      }
     });
 
-    // Guardar el feedback si existe
     let feedbackRecord = null;
     if (feedbackMessage) {
       feedbackRecord = await prisma.projectFeedback.create({
@@ -115,7 +154,7 @@ export const reviewProject = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Enviar la notificación al solicitante
+    // Notificaciones (Persistencia en DB y envío de Email)[cite: 2]
     const notifType = status === 'validado' ? 'solicitud_aprobada' : 'solicitud_rechazada';
     const notifTitle = status === 'validado' ? 'Proyecto Aprobado' : 'Proyecto Rechazado';
     const notifMsg = status === 'validado' 
@@ -127,7 +166,7 @@ export const reviewProject = async (req: AuthRequest, res: Response) => {
     res.json({ 
       message: `Proyecto ${status} correctamente`, 
       project: updatedProject,
-      feedback: feedbackRecord // <-- ¡Aquí lo exponemos!
+      feedback: feedbackRecord 
     });
   } catch (error) {
     console.error('Error en reviewProject:', error);
@@ -135,7 +174,9 @@ export const reviewProject = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// NUEVO: Actualizar la imagen (thumbnail) del proyecto
+// ============================================================
+// ACTUALIZAR THUMBNAIL DEL PROYECTO
+// ============================================================
 export const updateThumbnail = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -149,14 +190,16 @@ export const updateThumbnail = async (req: AuthRequest, res: Response) => {
     const project = await prisma.project.findUnique({ where: { id } });
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
-    // Validar que solo el creador o un admin puedan cambiar la foto
     if (project.solicitanteId !== userId && req.user?.role !== 'administrator') {
       return res.status(403).json({ error: 'No tienes permiso para editar esta imagen.' });
     }
 
     const updatedProject = await prisma.project.update({
       where: { id },
-      data: { thumbnailUrl }
+      data: { thumbnailUrl },
+      include: {
+        solicitante: { select: { name: true, email: true, company: true, avatarUrl: true } }
+      }
     });
 
     res.json({ message: 'Imagen del proyecto actualizada', project: updatedProject });

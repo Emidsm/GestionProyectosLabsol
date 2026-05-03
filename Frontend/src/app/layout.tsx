@@ -16,7 +16,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ProConecta | Sistema de Proyectos",
+  title: "Labsol| Sistema de Proyectos",
   description: "Plataforma integral para la gestión y vinculación de proyectos tecnológicos.",
 };
 

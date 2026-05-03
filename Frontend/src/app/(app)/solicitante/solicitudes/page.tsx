@@ -12,6 +12,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Link from 'next/link';
+// Importamos el icono para el botón
+import { PlusCircle } from 'lucide-react'; 
 
 export default function SolicitudesPage() {
   const currentUser = getUserFromCookies();
@@ -49,11 +51,20 @@ export default function SolicitudesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold font-headline">Mis Solicitudes</h1>
-        <p className="text-muted-foreground">
-          Gestione sus proyectos enviados, activos y el historial.
-        </p>
+      {/* ENCABEZADO CON FLEXBOX PARA EL BOTÓN */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold font-headline">Mis Solicitudes</h1>
+          <p className="text-muted-foreground">
+            Gestione sus proyectos enviados, activos y el historial.
+          </p>
+        </div>
+        <Button asChild className="shrink-0">
+          <Link href="/solicitante/solicitudes/crear">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Solicitar un proyecto
+          </Link>
+        </Button>
       </div>
 
       {/* ACTIVOS */}
@@ -133,7 +144,6 @@ export default function SolicitudesPage() {
                   </p>
                 </CardContent>
                 <CardFooter>
-                  {/* CAMBIO: Ahora manda a los detalles, no directo a editar */}
                   <Button variant="destructive" asChild>
                     <Link href={`/solicitante/solicitudes/${project.id}`}>
                       Ver motivos

@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gestion_proyectos
     ports:
-      - "5433:5432"
+      - "5433:5432" # Mapeo externo 5433 para tu laptop, interno 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +23,8 @@ services:
       MINIO_ROOT_USER: admin_proconecta
       MINIO_ROOT_PASSWORD: superpassword123
     ports:
-      - "9000:9000" # API
-      - "9003:9001" # Consola
+      - "9000:9000" # API de MinIO
+      - "9003:9001" # Consola de MinIO
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -39,22 +39,19 @@ services:
       context: ./Backend
       target: development
     container_name: gestion-backend
+    # Cargamos las variables desde el archivo .env
+    env_file:
+      - ./Backend/.env
     environment:
+      # Estas pueden quedarse aquí si son específicas del entorno Docker
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/gestion_proyectos
-      PORT: 3001
-      NODE_ENV: development
-      JWT_SECRET: super_secreto_para_desarrollo_proconecta
       MINIO_ENDPOINT: minio
-      MINIO_PORT: 9000
-      MINIO_ACCESS_KEY: admin_proconecta
-      MINIO_SECRET_KEY: superpassword123
-      MINIO_BUCKET: proconecta-uploads
     volumes:
       - ./Backend:/app
       - /app/node_modules
     ports: 
       - "3001:3001"
-      - "5555:5555" 
+      - "5555:5555" # Puerto para Prisma Studio
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +65,7 @@ services:
       target: development
     container_name: gestion-frontend
     environment:
+      # URL para que el cliente Next.js encuentre al backend
       NEXT_PUBLIC_API_URL: http://localhost:3001
     volumes:
       - ./Frontend:/app

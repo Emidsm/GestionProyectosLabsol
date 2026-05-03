@@ -10,19 +10,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectStatusBadge } from "./project-status-badge";
-import { ArrowRight, Calendar, Users, Briefcase } from "lucide-react";
+import { ArrowRight, Calendar, Users, Briefcase, CheckCircle2, Clock } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { ApiProject } from "@/lib/api";
 import type { Project } from "@/lib/types";
 
-/**
- * ProjectCard acepta tanto el tipo viejo (Project del mock) como el nuevo (ApiProject del backend).
- * Una vez que elimines el mock-data completamente, puedes quedarte solo con ApiProject.
- */
 interface ProjectCardProps {
   project: Project | ApiProject;
   /** Callback opcional para inscribirse desde el catálogo de estudiante */
   onEnroll?: () => void;
+  /** Cambiamos el isEnrolled booleano por el status en texto */
+  enrollmentStatus?: string;
 }
 
 // Helper: determina si es el tipo nuevo del backend
@@ -30,7 +28,7 @@ function isApiProject(p: Project | ApiProject): p is ApiProject {
   return 'solicitanteId' in p;
 }
 
-export function ProjectCard({ project, onEnroll }: ProjectCardProps) {
+export function ProjectCard({ project, onEnroll, enrollmentStatus }: ProjectCardProps) {
   const solicitanteName = isApiProject(project)
     ? project.solicitante.name
     : project.solicitante.name;
@@ -43,7 +41,6 @@ export function ProjectCard({ project, onEnroll }: ProjectCardProps) {
     ? project.abstract || project.description
     : (project as any).abstract || project.description;
 
-  // studentsEnrolled no existe en ApiProject (el backend no lo expone en el listado)
   const enrolledCount = isApiProject(project)
     ? null
     : (project as Project).studentsEnrolled?.length ?? 0;
@@ -113,8 +110,24 @@ export function ProjectCard({ project, onEnroll }: ProjectCardProps) {
             </Button>
           </Link>
           {onEnroll && (
-            <Button onClick={onEnroll} className="flex-1">
-              Inscribirme
+            <Button 
+              onClick={onEnroll} 
+              // Se bloquea si ya hay cualquier status
+              disabled={!!enrollmentStatus}
+              variant={enrollmentStatus ? "secondary" : "default"}
+              className="flex-1"
+            >
+              {enrollmentStatus === 'aceptado' ? (
+                <>
+                  <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" /> Inscrito
+                </>
+              ) : enrollmentStatus === 'pendiente' ? (
+                <>
+                  <Clock className="mr-2 h-4 w-4" /> Solicitud enviada
+                </>
+              ) : (
+                "Inscribirme"
+              )}
             </Button>
           )}
         </div>

@@ -1,14 +1,16 @@
 import { Router } from 'express';
-import { enrollInProject, getProjectEnrollments, forceEnrollStudent, reviewEnrollment } from '../controllers/enrollment.controller';
+import { enrollInProject, getProjectEnrollments, forceEnrollStudent, reviewEnrollment, getAllPendingEnrollments, getMyEnrollments} from '../controllers/enrollment.controller';
 import { verifyToken, isAdmin } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 router.post('/', verifyToken, enrollInProject);
 router.post('/force', verifyToken, isAdmin, forceEnrollStudent);
+router.get('/my', verifyToken, getMyEnrollments);
 router.get('/project/:projectId', verifyToken, getProjectEnrollments);
 
 // NUEVO: Administrador evalúa una inscripción específica
 router.put('/:id/review', verifyToken, isAdmin, reviewEnrollment);
+router.get('/admin/pending', verifyToken, getAllPendingEnrollments);
 
 export default router;

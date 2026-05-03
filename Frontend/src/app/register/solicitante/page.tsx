@@ -20,7 +20,11 @@ import { useToast } from "@/hooks/use-toast";
 const formSchema = z.object({
   fullName: z.string().min(1, { message: "El nombre completo es requerido." }),
   email: z.string().email({ message: "Por favor, ingresa un correo válido." }),
-  phone: z.string().min(10, { message: "El teléfono debe tener al menos 10 dígitos." }),
+  // Validación de 10 dígitos exactos y solo números
+  phone: z
+    .string()
+    .length(10, { message: "El teléfono debe tener exactamente 10 dígitos." })
+    .regex(/^\d+$/, { message: "El teléfono solo debe contener números." }),
   organization: z.string().min(1, { message: "La empresa/institución es requerida." }),
   position: z.string().min(1, { message: "El cargo es requerido." }),
   industry: z.string().min(1, { message: "El giro/actividad es requerido." }),
@@ -125,18 +129,27 @@ export default function SolicitanteRegisterPage() {
               )}
             />
             <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <FormControl>
-                    <Input type="tel" placeholder="55 1234 5678" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+		  control={form.control}
+		  name="phone"
+		  render={({ field }) => (
+		    <FormItem>
+		      <FormLabel>Teléfono (10 dígitos)</FormLabel>
+		      <FormControl>
+			<Input 
+			  type="tel" 
+			  placeholder="4921234567" 
+			  {...field} 
+			  // Filtramos la entrada para permitir solo números
+			  onChange={(e) => {
+			    const value = e.target.value.replace(/\D/g, ""); // Elimina no numéricos[cite: 7]
+			    field.onChange(value.slice(0, 10)); // Limita a 10 dígitos[cite: 7]
+			  }}
+			/>
+		      </FormControl>
+		      <FormMessage />
+		    </FormItem>
+		  )}
+	    />
             <FormField
               control={form.control}
               name="organization"

@@ -60,7 +60,11 @@ const majors = [
 const formSchema = z.object({
   fullName: z.string().min(1, { message: "El nombre completo es requerido." }),
   email: z.string().email({ message: "Por favor, ingresa un correo válido." }),
-  phone: z.string().min(10, { message: "El teléfono debe tener al menos 10 dígitos." }),
+  // Validación de 10 dígitos exactos y solo números
+  phone: z
+    .string()
+    .length(10, { message: "El teléfono debe tener exactamente 10 dígitos." })
+    .regex(/^\d+$/, { message: "El teléfono solo debe contener números." }),
   institution: z.string().min(1, { message: "La institución académica es requerida." }),
   municipality: z.string().min(1, { message: "El municipio es requerido." }),
   major: z.string().min(1, { message: "La carrera es requerida." }),
@@ -165,18 +169,27 @@ export default function StudentRegisterPage() {
               )}
             />
             <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <FormControl>
-                    <Input type="tel" placeholder="55 1234 5678" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+		  control={form.control}
+		  name="phone"
+		  render={({ field }) => (
+		    <FormItem>
+		      <FormLabel>Teléfono (10 dígitos)</FormLabel>
+		      <FormControl>
+			<Input 
+			  type="tel" 
+			  placeholder="4921234567" 
+			  {...field} 
+			  // Limpiamos la entrada para permitir solo números en tiempo real
+			  onChange={(e) => {
+			    const value = e.target.value.replace(/\D/g, "");
+			    field.onChange(value.slice(0, 10)); // Limitamos a 10 caracteres
+			  }}
+			/>
+		    </FormControl>
+		   <FormMessage />
+		</FormItem>
+		)}
+	    />
             <FormField
               control={form.control}
               name="institution"

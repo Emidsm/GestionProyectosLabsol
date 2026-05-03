@@ -57,6 +57,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === '/administrador/inscripciones'}>
+                  <Link href="/administrador/inscripciones">
+                    <User />
+                    Inscripciones
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={pathname === '/administrador/perfil'}>
                   <Link href="/administrador/perfil">
                     <User />

@@ -94,6 +94,38 @@ export interface ApiUser {
   createdAt: string;
 }
 
+/** Inscripción Pendiente tal como la devuelve GET /api/enrollments/admin/pending */
+export interface ApiPendingEnrollment {
+  id: string;
+  enrolledAt: string;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+    career: string;
+    academicInstitution: string;
+    avatarUrl: string | null;
+  };
+  project: {
+    id: string;
+    title: string;
+    solicitante: {
+      name: string;
+    };
+  };
+}
+
+/** Notificación tal como la devuelve GET /api/notifications */
+export interface ApiNotification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'solicitud_aprobada' | 'solicitud_rechazada' | 'inscripcion_nueva' | 'sistema';
+  isRead: boolean;
+  createdAt: string;
+}
+
 // ============================================================
 // HELPER INTERNO
 // ============================================================
@@ -204,7 +236,7 @@ export async function getProjectEnrollments(
   return apiFetch(`/api/enrollments/project/${projectId}`);
 }
 
-/** PUT /api/enrollments/:id/review — admin acepta o rechaza una inscripción */
+/** PUT /api/enrollments/:id/review — admin acepta o rechaza una inscripción (usado desde la vista de un proyecto) */
 export async function reviewEnrollment(
   enrollmentId: string,
   status: 'aceptado' | 'rechazado'
@@ -223,6 +255,22 @@ export async function forceEnrollStudent(data: {
   return apiFetch('/api/enrollments/force', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+}
+
+/** GET /api/enrollments/admin/pending — admin lista todas las inscripciones pendientes globales */
+export async function getPendingEnrollments(): Promise<ApiPendingEnrollment[]> {
+  return apiFetch<ApiPendingEnrollment[]>('/api/enrollments/admin/pending');
+}
+
+/** PATCH /api/enrollments/:id/status — admin acepta o rechaza una inscripción desde el dashboard general */
+export async function updateEnrollmentStatus(
+  id: string, 
+  status: 'aceptado' | 'rechazado'
+): Promise<{ message: string; enrollment: any }> {
+  return apiFetch(`/api/enrollments/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
   });
 }
 
@@ -296,5 +344,33 @@ export async function updateProfile(data: Partial<{
   return apiFetch('/api/users/profile', {
     method: 'PUT',
     body: JSON.stringify(data),
+  });
+}
+
+/** GET /api/enrollments/my — lista las inscripciones del estudiante logueado */
+export async function getMyEnrollments(): Promise<ApiEnrollment[]> {
+  return apiFetch<ApiEnrollment[]>('/api/enrollments/my');
+}
+
+// ============================================================
+// NOTIFICACIONES
+// ============================================================
+
+/** GET /api/notifications — lista las notificaciones del usuario logueado */
+export async function getMyNotifications(): Promise<ApiNotification[]> {
+  return apiFetch<ApiNotification[]>('/api/notifications');
+}
+
+/** PATCH /api/notifications/read-all — marca todas como leídas */
+export async function markNotificationsAsRead(): Promise<{ message: string }> {
+  return apiFetch('/api/notifications/read-all', {
+    method: 'PATCH',
+  });
+}
+
+/** PATCH /api/notifications/:id/read — marca una sola como leída */
+export async function markOneNotificationAsRead(id: string): Promise<ApiNotification> {
+  return apiFetch(`/api/notifications/${id}/read`, {
+    method: 'PATCH',
   });
 }

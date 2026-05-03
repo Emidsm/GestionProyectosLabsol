@@ -5,6 +5,9 @@ import userRoutes from './routes/user.routes';
 import projectRoutes from './routes/project.routes';
 import enrollmentRoutes from './routes/enrollment.routes';
 import uploadRoutes from './routes/upload.routes'; // Importamos rutas de subida
+import notificationRoutes from './routes/notification.routes'; // <-- NUEVO IMPORT
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const app = express();
 
@@ -20,3 +23,4 @@ app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/upload', uploadRoutes); // Registramos el endpoint
+app.use('/api/notifications', notificationRoutes); // <-- NUEVA RUTA

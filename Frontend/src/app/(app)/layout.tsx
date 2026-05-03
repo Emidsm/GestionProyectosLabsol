@@ -1,5 +1,5 @@
 'use client';
-
+import { NotificationsPopover } from '@/components/NotificationsPopover';
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -73,16 +73,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* DERECHA: CAMPANA Y PERFIL */}
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 border border-background"></span>
-            </Button>
-            
-            <div className="border-l pl-4 ml-2">
-              <UserNav />
-            </div>
-          </div>
+          {/* DERECHA: CAMPANA Y PERFIL */}
+	<div className="flex items-center gap-4">
+	  {/* SUSTITUIMOS EL BOTÓN ESTÁTICO POR EL POPOVER DINÁMICO */}
+	  <NotificationsPopover />
+	  
+	  <div className="border-l pl-4 ml-2">
+	    <UserNav />
+	  </div>
+	</div>
 
         </div>
       </header>

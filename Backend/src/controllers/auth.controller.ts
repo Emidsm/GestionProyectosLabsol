@@ -7,7 +7,22 @@ import { AuthRequest } from '../middlewares/auth.middleware';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, role } = req.body;
+    // Jalamos todos los campos posibles de ambos formularios
+    const { 
+      email, 
+      password, 
+      name, 
+      role,
+      phone,
+      // Campos de estudiante
+      academicInstitution,
+      municipality,
+      career,
+      // Campos de solicitante
+      company,
+      jobTitle,
+      activity
+    } = req.body;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -17,12 +32,20 @@ export const register = async (req: Request, res: Response) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Le pasamos toda la data a Prisma
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
         role: role || 'estudiante',
+        phone,
+        academicInstitution,
+        municipality,
+        career,
+        company,
+        jobTitle,
+        activity
       },
     });
 
