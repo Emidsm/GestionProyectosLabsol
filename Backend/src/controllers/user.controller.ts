@@ -97,6 +97,61 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// NUEVO: Obtener un usuario por ID (solo admin)
+export const getUserById = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true, email: true, name: true, role: true, avatarUrl: true,
+        phone: true, company: true, jobTitle: true, activity: true,
+        career: true, academicInstitution: true, estado: true, municipality: true,
+        isActive: true, isBaseAdmin: true, createdAt: true,
+        projectsCreated: {
+          select: { id: true, title: true, status: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json(user);
+  } catch (error) {
+    console.error('Error en getUserById:', error);
+    res.status(500).json({ error: 'Error al obtener el usuario' });
+  }
+};
+
+// NUEVO: Eliminar un usuario (solo admin)
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const requesterId = req.user?.id;
+
+    if (id === requesterId) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    if (user.isBaseAdmin) {
+      return res.status(403).json({ error: 'No se puede eliminar al administrador base.' });
+    }
+
+    // Borrado real. Por las relaciones onDelete: Cascade del schema, esto también
+    // elimina sus proyectos, inscripciones y notificaciones asociadas.
+    await prisma.user.delete({ where: { id } });
+
+    res.json({ message: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    console.error('Error en deleteUser:', error);
+    res.status(500).json({ error: 'Error al eliminar el usuario' });
+  }
+};
+
 // NUEVO: Listar todos los usuarios (solo admin)
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {

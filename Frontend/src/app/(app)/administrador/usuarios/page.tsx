@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { getAllUsers, type ApiUser } from '@/lib/api';
+import { getAllUsers, deleteUser, type ApiUser } from '@/lib/api';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -10,14 +10,22 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { MoreHorizontal, UserPlus } from 'lucide-react';
 import { AddAdminDialog } from '@/components/add-admin-dialog';
+import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 export default function AdminUsersPage() {
+  const { toast } = useToast();
   const [isAddAdminOpen, setIsAddAdminOpen] = React.useState(false);
   const [users, setUsers] = React.useState<ApiUser[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [userToDelete, setUserToDelete] = React.useState<ApiUser | null>(null);
+  const [deleting, setDeleting] = React.useState(false);
 
   React.useEffect(() => {
     getAllUsers()
@@ -25,6 +33,21 @@ export default function AdminUsersPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+    setDeleting(true);
+    try {
+      await deleteUser(userToDelete.id);
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      toast({ title: 'Usuario eliminado', description: `Se eliminó a ${userToDelete.name}.` });
+      setUserToDelete(null);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'No se pudo eliminar', description: err.message });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 w-full">
@@ -38,8 +61,8 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      <div className="border rounded-lg bg-background shadow-sm overflow-hidden">
-        <Table>
+      <div className="border rounded-lg bg-background shadow-sm overflow-x-auto">
+        <Table className="min-w-[640px]">
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[300px]">Usuario</TableHead>
@@ -103,7 +126,13 @@ export default function AdminUsersPage() {
                         <DropdownMenuItem asChild>
                           <Link href={`/administrador/usuarios/${user.id}`}>Ver detalles</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setUserToDelete(user);
+                          }}
+                        >
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -116,6 +145,32 @@ export default function AdminUsersPage() {
         </Table>
       </div>
       <AddAdminDialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen} />
+
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar a este usuario?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vas a eliminar a <strong>{userToDelete?.name}</strong> ({userToDelete?.email}).
+              Esta acción no se puede deshacer y también elimina sus proyectos, inscripciones
+              y notificaciones asociadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -75,8 +75,8 @@ export default function EditProjectPage({ role = 'solicitante' }: EditProjectPag
           title: found.title,
           abstract: found.abstract || '',
           description: found.description,
-          category: found.category,
-          timeline: found.timeline,
+          category: found.category ?? '',
+          timeline: found.timeline ?? '',
           studentLimit: found.studentLimit,
           requiredSkills: found.requiredSkills.join(', '),
           status: (found.status === 'borrador' || found.status === 'en_revision')

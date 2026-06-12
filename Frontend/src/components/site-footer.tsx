@@ -25,8 +25,8 @@ export function SiteFooter() {
             <Link href="#" className="hover:underline">Transparencia</Link>
           </div>
           <div className="flex flex-col items-start md:items-center justify-center gap-4">
-            <Image src="https://placehold.co/150x50.png" width={150} height={50} alt="Logo 1" />
-            <Image src="https://placehold.co/150x50.png" width={150} height={50} alt="Logo 2" />
+            <Image src="/placeholder.svg" width={150} height={50} alt="Logo 1" />
+            <Image src="/placeholder.svg" width={150} height={50} alt="Logo 2" />
           </div>
         </div>
       </div>

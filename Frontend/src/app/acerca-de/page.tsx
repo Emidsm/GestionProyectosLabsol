@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Code2, Mail } from 'lucide-react';
+import { ArrowLeft, Code2, Mail, Linkedin } from 'lucide-react';
 
 export const metadata = {
   title: 'Acerca de | Gestión de Proyectos Labsol',
@@ -49,12 +49,22 @@ export default function AcercaDePage() {
           <div className="pt-2">
             <p className="text-lg font-bold">Emiliano De Santiago</p>
             <p className="text-muted-foreground">Desarrollador Full-Stack</p>
-            <a
-              href="mailto:emidsm2005@gmail.com"
-              className="mt-3 inline-flex items-center text-sm text-primary hover:underline"
-            >
-              <Mail className="mr-2 h-4 w-4" /> emidsm2005@gmail.com
-            </a>
+            <div className="mt-3 flex flex-col gap-2">
+              <a
+                href="mailto:emidsm2005@gmail.com"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <Mail className="mr-2 h-4 w-4" /> emidsm2005@gmail.com
+              </a>
+              <a
+                href="https://www.linkedin.com/in/emiliano-de-santiago-morales-67741028a/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <Linkedin className="mr-2 h-4 w-4" /> LinkedIn
+              </a>
+            </div>
           </div>
         </section>
 

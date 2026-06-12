@@ -57,7 +57,7 @@ export default function EstudianteProjectsPage() {
     (project) =>
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.category.toLowerCase().includes(searchTerm.toLowerCase())
+      (project.category ?? '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredAvailable = filterBySearch(availableProjects);

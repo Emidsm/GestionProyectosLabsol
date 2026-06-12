@@ -65,7 +65,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <Image
-              src="https://placehold.co/600x400.png"
+              src="/placeholder.svg"
               width={600}
               height={400}
               alt="Hero"
@@ -94,7 +94,7 @@ export default function DashboardPage() {
               {finishedProjects.map((project) => (
                 <div key={project.id} className="flex flex-col items-center text-center">
                   <Image
-                    src={project.thumbnailUrl || 'https://placehold.co/400x225.png'}
+                    src={project.thumbnailUrl || '/placeholder.svg'}
                     alt={project.title}
                     width={400}
                     height={225}

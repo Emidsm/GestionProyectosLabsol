@@ -1,14 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Check } from 'lucide-react';
 import { 
   Popover, PopoverContent, PopoverTrigger 
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { getMyNotifications, markNotificationsAsRead } from '@/lib/api';
+import { getMyNotifications, markNotificationsAsRead, markOneNotificationAsRead } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -43,6 +43,17 @@ export function NotificationsPopover() {
   setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
+  const handleMarkOneAsRead = async (id: string) => {
+    // Optimista: la marcamos como leída de inmediato.
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: true } : n)));
+    try {
+      await markOneNotificationAsRead(id);
+    } catch {
+      // Si falla, revertimos.
+      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: false } : n)));
+    }
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -68,12 +79,26 @@ export function NotificationsPopover() {
             <div className="p-4 text-center text-sm text-muted-foreground">No tienes notificaciones.</div>
           ) : (
             notifications.map((n) => (
-              <div key={n.id} className={`p-4 text-sm border-b last:border-0 ${!n.isRead ? 'bg-muted/30' : ''}`}>
-                <p className="font-semibold">{n.title}</p>
-                <p className="text-muted-foreground line-clamp-2">{n.message}</p>
-                <p className="text-[10px] text-primary mt-1">
-                  {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: es })}
-                </p>
+              <div key={n.id} className={`flex items-start gap-2 p-4 text-sm border-b last:border-0 ${!n.isRead ? 'bg-muted/30' : ''}`}>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold">{n.title}</p>
+                  <p className="text-muted-foreground line-clamp-2">{n.message}</p>
+                  <p className="text-[10px] text-primary mt-1">
+                    {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: es })}
+                  </p>
+                </div>
+                {!n.isRead && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+                    title="Marcar como leída"
+                    aria-label="Marcar como leída"
+                    onClick={() => handleMarkOneAsRead(n.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             ))
           )}

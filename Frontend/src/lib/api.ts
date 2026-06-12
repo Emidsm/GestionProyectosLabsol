@@ -38,10 +38,10 @@ export interface ApiProject {
   title: string;
   abstract: string;
   description: string;
-  category: string;
+  category: string | null;
   status: BackendProjectStatus;
   requiredSkills: string[];
-  timeline: string;
+  timeline: string | null;
   studentLimit: number;
   thumbnailUrl?: string;
   isFeatured: boolean;
@@ -339,6 +339,21 @@ export async function uploadImage(formData: FormData): Promise<{ url: string }> 
 /** GET /api/users — lista todos los usuarios (solo admin) */
 export async function getAllUsers(): Promise<ApiUser[]> {
   return apiFetch<ApiUser[]>('/api/users');
+}
+
+export interface ApiUserDetail extends ApiUser {
+  isBaseAdmin?: boolean;
+  projectsCreated: { id: string; title: string; status: BackendProjectStatus }[];
+}
+
+/** GET /api/users/:id — detalle de un usuario (solo admin) */
+export async function getUserById(id: string): Promise<ApiUserDetail> {
+  return apiFetch<ApiUserDetail>(`/api/users/${id}`);
+}
+
+/** DELETE /api/users/:id — elimina un usuario (solo admin) */
+export async function deleteUser(id: string): Promise<{ message: string }> {
+  return apiFetch(`/api/users/${id}`, { method: 'DELETE' });
 }
 
 /** PUT /api/users/profile — actualiza datos del perfil propio */
