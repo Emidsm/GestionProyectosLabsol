@@ -16,6 +16,19 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: gestion-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   minio:
     image: minio/minio:latest
     container_name: gestion-minio
@@ -46,16 +59,19 @@ services:
       # Estas pueden quedarse aquí si son específicas del entorno Docker
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/gestion_proyectos
       MINIO_ENDPOINT: minio
+      REDIS_URL: redis://redis:6379
     volumes:
       - ./Backend:/app
       - /app/node_modules
-    ports: 
+    ports:
       - "3001:3001"
       - "5555:5555" # Puerto para Prisma Studio
     depends_on:
       postgres:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && npm run dev"
 
@@ -79,3 +95,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  redis_data:

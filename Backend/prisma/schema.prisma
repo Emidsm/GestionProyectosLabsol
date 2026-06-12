@@ -64,9 +64,10 @@ model User {
   activity            String?        // ← AGREGADO (giro/actividad del SRS)
   
   // Estudiante
-  academicInstitution String?        
-  career              String?
-  municipality        String?        // ← AGREGADO
+  academicInstitution String?
+  career              String?        // Texto, elegido del catálogo Carrera
+  estado              String?        // Texto, elegido del catálogo Estado (INEGI)
+  municipality        String?        // Texto, elegido del catálogo Municipio (INEGI)
   
   isBaseAdmin         Boolean        @default(false) 
   mustChangePassword  Boolean        @default(false) 
@@ -89,18 +90,20 @@ model Project {
   id                  String            @id @default(cuid())
   
   title               String
-  abstract            String            
-  description         String            @db.Text 
-  category            String            
-  
+  abstract            String
+  description         String            @db.Text
+  // category y timeline ahora son opcionales: el solicitante solo captura
+  // título, resumen y descripción; el administrador completa el resto.
+  category            String?
+
   status              ProjectStatus     @default(en_revision)
   isFeatured          Boolean           @default(false)
   
   thumbnailUrl        String?
   
-  requiredSkills      String[]          
-  timeline            String            
-  studentLimit        Int               @default(4) 
+  requiredSkills      String[]
+  timeline            String?
+  studentLimit        Int               @default(4)
   
   solicitanteId       String
   solicitante         User              @relation("SolicitanteProjects", fields: [solicitanteId], references: [id], onDelete: Cascade)
@@ -197,4 +200,42 @@ model Notification {
   @@index([userId])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// ============================================
+// CATÁLOGOS
+// ============================================
+
+// Catálogo de carreras administrable por el admin (CRUD dinámico).
+model Carrera {
+  id        String   @id @default(cuid())
+  nombre    String   @unique
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Catálogo de estados de México (datos del INEGI). Solo lectura para la app.
+model Estado {
+  id        String      @id @default(cuid())
+  nombre    String      @unique
+
+  municipios Municipio[]
+
+  createdAt DateTime    @default(now())
+}
+
+// Catálogo de municipios de México (datos del INEGI), ligados a su estado.
+model Municipio {
+  id        String   @id @default(cuid())
+  nombre    String
+
+  estadoId  String
+  estado    Estado   @relation(fields: [estadoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([estadoId, nombre])
+  @@index([estadoId])
 }

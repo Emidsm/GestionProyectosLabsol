@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -12,6 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import {
+  getCarreras,
+  getEstados,
+  getMunicipios,
+  type ApiCarrera,
+  type ApiEstado,
+  type ApiMunicipio,
+} from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,6 +31,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/hooks/use-toast";
 
 // Datos de ejemplo para los combobox
@@ -35,28 +45,6 @@ const institutions = [
   "Universidad del Desarrollo Profesional (UNIDEP)",
 ];
 
-const municipalities = [
-  "Apozol", "Apulco", "Atolinga", "Benito Juárez", "Calera", "Cañitas de Felipe Pescador",
-  "Concepción del Oro", "Cuauhtémoc", "Chalchihuites", "Fresnillo", "Trinidad García de la Cadena",
-  "Genaro Codina", "General Enrique Estrada", "General Francisco R. Murguía", "El Plateado de Joaquín Amaro",
-  "General Pánfilo Natera", "Guadalupe", "Huanusco", "Jalpa", "Jerez", "Jiménez del Teul", "Juan Aldama",
-  "Juchipila", "Loreto", "Luis Moya", "Mazapil", "Melchor Ocampo", "Mezquital del Oro", "Miguel Auza",
-  "Momax", "Monte Escobedo", "Morelos", "Moyahua de Estrada", "Nochistlán de Mejía", "Noria de Ángeles",
-  "Ojocaliente", "Pánuco", "Pinos", "Río Grande", "Sain Alto", "El Salvador", "Sombrerete", "Susticacán",
-  "Tabasco", "Tepechitlán", "Tepetongo", "Teúl de González Ortega", "Tlaltenango de Sánchez Román",
-  "Valparaíso", "Vetagrande", "Villa de Cos", "Villa García", "Villa González Ortega", "Villa Hidalgo",
-  "Villanueva", "Zacatecas", "Trancoso", "Santa María de la Paz"
-];
-
-const majors = [
-  "Ingeniería en Computación", "Ingeniería Civil", "Ingeniería Industrial", "Ingeniería Mecatrónica",
-  "Ingeniería Electrónica", "Ingeniería en Energías Renovables", "Ingeniería en Sistemas",
-  "Medicina", "Psicología","Economía", "Arquitectura", "Diseño Gráfico", "Diseño Industrial", "Comunicación", "Educación", "Ciencias Políticas", "Relaciones Internacionales",
-  "Gastronomía", "Turismo", "Veterinaria", "Agronomía", "Biotecnología", "Física", "Matemáticas",
-  "Química", "Lenguas Extranjeras", "Ciencias Ambientales"
-];
-
-
 const formSchema = z.object({
   fullName: z.string().min(1, { message: "El nombre completo es requerido." }),
   email: z.string().email({ message: "Por favor, ingresa un correo válido." }),
@@ -66,6 +54,7 @@ const formSchema = z.object({
     .length(10, { message: "El teléfono debe tener exactamente 10 dígitos." })
     .regex(/^\d+$/, { message: "El teléfono solo debe contener números." }),
   institution: z.string().min(1, { message: "La institución académica es requerida." }),
+  estado: z.string().min(1, { message: "El estado es requerido." }),
   municipality: z.string().min(1, { message: "El municipio es requerido." }),
   major: z.string().min(1, { message: "La carrera es requerida." }),
   password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }),
@@ -86,6 +75,7 @@ export default function StudentRegisterPage() {
       email: "",
       phone: "",
       institution: "",
+      estado: "",
       municipality: "",
       major: "",
       password: "",
@@ -94,6 +84,28 @@ export default function StudentRegisterPage() {
   });
 
   const { isSubmitting } = form.formState;
+
+  // Catálogos cargados desde el backend (carreras dinámicas + INEGI).
+  const [carreras, setCarreras] = React.useState<ApiCarrera[]>([]);
+  const [estados, setEstados] = React.useState<ApiEstado[]>([]);
+  const [municipios, setMunicipios] = React.useState<ApiMunicipio[]>([]);
+
+  React.useEffect(() => {
+    getCarreras().then((data) => setCarreras(data.filter((c) => c.isActive))).catch(() => {});
+    getEstados().then(setEstados).catch(() => {});
+  }, []);
+
+  // Cuando cambia el estado seleccionado, cargamos sus municipios.
+  const selectedEstado = form.watch("estado");
+  React.useEffect(() => {
+    if (!selectedEstado) {
+      setMunicipios([]);
+      return;
+    }
+    const estado = estados.find((e) => e.nombre === selectedEstado);
+    if (!estado) return;
+    getMunicipios(estado.id).then(setMunicipios).catch(() => setMunicipios([]));
+  }, [selectedEstado, estados]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -107,8 +119,9 @@ export default function StudentRegisterPage() {
           role: "estudiante",
           phone: values.phone,
           academicInstitution: values.institution, // Mapeado a Prisma
-          municipality: values.municipality,       // Mapeado a Prisma
-          career: values.major                     // Mapeado a Prisma
+          estado: values.estado,                    // Mapeado a Prisma (INEGI)
+          municipality: values.municipality,        // Mapeado a Prisma (INEGI)
+          career: values.major                      // Mapeado a Prisma
         }),
       });
 
@@ -216,20 +229,59 @@ export default function StudentRegisterPage() {
             />
             <FormField
               control={form.control}
+              name="estado"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Al cambiar de estado reiniciamos el municipio.
+                      form.setValue("municipality", "");
+                    }}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona tu estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {estados.map((estado) => (
+                        <SelectItem key={estado.id} value={estado.nombre}>
+                          {estado.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="municipality"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Municipio de Procedencia</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={!selectedEstado}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona tu municipio" />
+                        <SelectValue
+                          placeholder={
+                            selectedEstado ? "Selecciona tu municipio" : "Primero elige un estado"
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {municipalities.map((municipality) => (
-                        <SelectItem key={municipality} value={municipality}>
-                          {municipality}
+                      {municipios.map((m) => (
+                        <SelectItem key={m.id} value={m.nombre}>
+                          {m.nombre}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -244,16 +296,16 @@ export default function StudentRegisterPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Carrera</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona tu carrera" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {majors.map((major) => (
-                        <SelectItem key={major} value={major}>
-                          {major}
+                      {carreras.map((c) => (
+                        <SelectItem key={c.id} value={c.nombre}>
+                          {c.nombre}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -269,7 +321,7 @@ export default function StudentRegisterPage() {
                 <FormItem>
                   <FormLabel>Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <PasswordInput placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -282,7 +334,7 @@ export default function StudentRegisterPage() {
                 <FormItem>
                   <FormLabel>Confirmar Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <PasswordInput placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

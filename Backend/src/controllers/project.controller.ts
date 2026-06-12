@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { prisma } from '../config/database';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import { sendNotification } from '../utils/notifications';
@@ -59,13 +59,17 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
     const project = await prisma.project.findUnique({ where: { id } });
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
+    const isAdminUser = req.user?.role === 'administrator';
+
     // Permisos: Solo dueño o Admin
-    if (project.solicitanteId !== userId && req.user?.role !== 'administrator') {
+    if (project.solicitanteId !== userId && !isAdminUser) {
       return res.status(403).json({ error: 'No tienes permiso para editar este proyecto.' });
     }
 
-    // Lógica de estados editables
-    if (project.status !== 'borrador' && project.status !== 'rechazado') {
+    // El solicitante solo puede editar borradores o rechazados. El admin puede
+    // completar los datos faltantes (categoría, duración, habilidades, cupo) en
+    // cualquier estado, porque "lo demás lo llena el admin".
+    if (!isAdminUser && project.status !== 'borrador' && project.status !== 'rechazado') {
       return res.status(400).json({ error: 'Solo puedes editar proyectos en borrador o rechazados.' });
     }
 
@@ -93,11 +97,29 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
 // ============================================================
 // OBTENER TODOS LOS PROYECTOS (Catálogo)
 // ============================================================
-export const getProjects = async (req: Request, res: Response) => {
+export const getProjects = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+
+    // Visibilidad por rol. Aplicamos el control de acceso en el servidor para
+    // que no se pueda "forzar" el endpoint y ver solicitudes que no son
+    // públicas (borradores o en revisión / lista de espera) o ajenas.
+    const where: any = { isDeleted: false };
+
+    if (userRole === 'estudiante') {
+      // El estudiante solo ve el catálogo público: proyectos ya validados,
+      // en curso o finalizados. Nunca borradores ni solicitudes en revisión.
+      where.status = { in: ['validado', 'en_curso', 'finalizado'] };
+    } else if (userRole === 'solicitante') {
+      // El solicitante solo ve sus propios proyectos (en cualquier estado).
+      where.solicitanteId = userId;
+    }
+    // El administrador ve todo lo no eliminado.
+
     const projects = await prisma.project.findMany({
-      where: { isDeleted: false },
-      include: { 
+      where,
+      include: {
         // CLAVE: Incluir avatarUrl para que las ProjectCards no salgan vacías[cite: 1, 10]
         solicitante: { 
           select: { name: true, email: true, company: true, avatarUrl: true } 
@@ -110,6 +132,47 @@ export const getProjects = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error en getProjects:', error);
     res.status(500).json({ error: 'Error al obtener los proyectos' });
+  }
+};
+
+// ============================================================
+// OBTENER UN PROYECTO POR ID (con control de acceso)
+// ============================================================
+export const getProjectById = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+
+    const project = await prisma.project.findFirst({
+      where: { id, isDeleted: false },
+      include: {
+        solicitante: { select: { name: true, email: true, company: true, avatarUrl: true } },
+        feedback: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    if (!project) return res.status(404).json({ error: 'Proyecto no encontrado.' });
+
+    const isPublic = ['validado', 'en_curso', 'finalizado'].includes(project.status);
+    const isOwner = project.solicitanteId === userId;
+    const isAdminUser = userRole === 'administrator';
+
+    // Reglas de visibilidad: admin todo; solicitante solo lo suyo; estudiante
+    // solo proyectos públicos. Si no aplica, negamos el acceso (no forzar el link).
+    const allowed =
+      isAdminUser ||
+      isOwner ||
+      (userRole === 'estudiante' && isPublic);
+
+    if (!allowed) {
+      return res.status(403).json({ error: 'No tienes permiso para ver este proyecto.' });
+    }
+
+    res.json(project);
+  } catch (error) {
+    console.error('Error en getProjectById:', error);
+    res.status(500).json({ error: 'Error al obtener el proyecto' });
   }
 };
 

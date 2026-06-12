@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import { notFound, useParams } from 'next/navigation';
-import { getProjects, getProjectEnrollments, STATUS_LABELS, type ApiProject, type ApiEnrollment } from '@/lib/api';
-import { getUserFromCookies } from '@/lib/cookie-utils';
+import { getProject, getProjectEnrollments, STATUS_LABELS, type ApiProject, type ApiEnrollment } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,26 +11,46 @@ import Link from 'next/link';
 
 export default function SolicitanteProjectDetailsPage() {
   const params = useParams();
-  const user = getUserFromCookies();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [project, setProject] = React.useState<ApiProject | null>(null);
   const [enrollments, setEnrollments] = React.useState<ApiEnrollment[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [accessDenied, setAccessDenied] = React.useState(false);
 
   React.useEffect(() => {
     if (!id) return;
-    Promise.all([getProjects(), getProjectEnrollments(id)])
-      .then(([projects, enr]) => {
-        const found = projects.find((p) => p.id === id);
-        if (found) setProject(found);
+    (async () => {
+      try {
+        // El servidor valida el acceso (403 si el proyecto no es nuestro).
+        const found = await getProject(id);
+        setProject(found);
+        const enr = await getProjectEnrollments(id).catch(() => []);
         setEnrollments(enr);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch {
+        setAccessDenied(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
   if (loading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+
+  if (accessDenied) {
+    return (
+      <div className="max-w-md mx-auto py-16 text-center space-y-4">
+        <h1 className="text-2xl font-bold">No tienes permiso para ver esto</h1>
+        <p className="text-muted-foreground">Esta solicitud no está disponible para tu cuenta.</p>
+        <Button asChild>
+          <Link href="/solicitante/solicitudes">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Volver a mis solicitudes
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (!project) return notFound();
 
   const canEdit = project.status === 'borrador' || project.status === 'rechazado';

@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
-import { getProjects, enrollInProject, getProjectEnrollments, type ApiProject } from '@/lib/api';
+import { getProject, enrollInProject, getProjectEnrollments, type ApiProject } from '@/lib/api';
 import { getUserFromCookies } from '@/lib/cookie-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar, Users, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CheckCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function StudentProjectDetailsPage() {
@@ -22,27 +22,32 @@ export default function StudentProjectDetailsPage() {
   const [isEnrolled, setIsEnrolled] = React.useState(false);
   const [enrolledCount, setEnrolledCount] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
+  const [accessDenied, setAccessDenied] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   React.useEffect(() => {
     if (!id) return;
-    Promise.all([getProjects(), getProjectEnrollments(id)])
-      .then(([projects, enrollments]) => {
-        const found = projects.find((p) => p.id === id);
-        if (!found) return;
+    (async () => {
+      try {
+        // El servidor decide si podemos ver este proyecto (403 si no es público).
+        const found = await getProject(id);
         setProject(found);
 
+        const enrollments = await getProjectEnrollments(id).catch(() => []);
         const accepted = enrollments.filter((e) => e.status === 'aceptado');
         setEnrolledCount(accepted.length);
-
         if (user) {
           setIsEnrolled(enrollments.some((e) => e.studentId === user.id));
         }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch {
+        // 403 (sin permiso) o 404 → mostramos el aviso de acceso restringido.
+        setAccessDenied(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
   const handleInscripcion = async () => {
@@ -63,6 +68,26 @@ export default function StudentProjectDetailsPage() {
   };
 
   if (loading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+
+  if (accessDenied) {
+    return (
+      <div className="max-w-md mx-auto py-16 text-center space-y-4">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+          <Lock className="h-7 w-7 text-muted-foreground" />
+        </div>
+        <h1 className="text-2xl font-bold">No tienes permiso para ver esto</h1>
+        <p className="text-muted-foreground">
+          Este proyecto no está disponible públicamente o aún no ha sido validado.
+        </p>
+        <Button asChild>
+          <Link href="/estudiante/proyectos">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Volver al catálogo
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (!project) return notFound();
 
   const isFull = enrolledCount >= project.studentLimit;

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { getMyNotifications, markNotificationsAsRead } from '@/lib/api';
+import { getSocket } from '@/lib/socket';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -18,6 +19,23 @@ export function NotificationsPopover() {
 
   React.useEffect(() => {
     getMyNotifications().then(setNotifications).catch(console.error);
+
+    // Tiempo real: escuchamos nuevas notificaciones por Socket.IO.
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNew = (notification: any) => {
+      setNotifications((prev) => {
+        // Evitamos duplicados si la notificación ya llegó por el fetch inicial.
+        if (prev.some((n) => n.id === notification.id)) return prev;
+        return [notification, ...prev];
+      });
+    };
+
+    socket.on('notification:new', handleNew);
+    return () => {
+      socket.off('notification:new', handleNew);
+    };
   }, []);
 
   const handleMarkAllAsRead = async () => {

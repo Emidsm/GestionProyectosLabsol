@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { prisma } from '../config/database';
 import { NotificationType } from '@prisma/client'; // Importamos el tipo real
+import { emitToUser } from '../config/socket'; // Notificación en tiempo real (Socket.IO)
 
 // Creamos el transporter dinámicamente para mayor seguridad
 const getTransporter = () => {
@@ -33,6 +34,9 @@ export const sendNotification = async (
       },
     });
     console.log(`✅ Notificación guardada en DB (ID: ${newNotification.id})`);
+
+    // Empujamos la notificación en tiempo real al usuario (si está conectado).
+    emitToUser(userId, 'notification:new', newNotification);
 
     // 2. Obtener correo del destinatario[cite: 2]
     const user = await prisma.user.findUnique({

@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import { notFound, useParams } from 'next/navigation';
-import { getProjects, STATUS_LABELS, type ApiProject } from '@/lib/api';
-import { getUserFromCookies } from '@/lib/cookie-utils';
+import { getProject, STATUS_LABELS, type ApiProject } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +17,6 @@ interface ProjectWithFeedback extends ApiProject {
 
 export default function SolicitanteRequestDetailsPage() {
   const params = useParams();
-  const user = getUserFromCookies();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [project, setProject] = React.useState<ProjectWithFeedback | null>(null);
@@ -27,19 +25,12 @@ export default function SolicitanteRequestDetailsPage() {
 
   React.useEffect(() => {
     if (!id) return;
-    getProjects()
-      .then((data) => {
-        const found = data.find((p) => p.id === id);
-        if (!found) return;
-        if (user && found.solicitanteId !== user.id) {
-          setNotOwner(true);
-          return;
-        }
-        setProject(found as ProjectWithFeedback);
-      })
-      .catch(console.error)
+    // El servidor solo devuelve la solicitud si es nuestra (403 en caso contrario).
+    getProject(id)
+      .then((found) => setProject(found as ProjectWithFeedback))
+      .catch(() => setNotOwner(true))
       .finally(() => setLoading(false));
-  }, [id, user]);
+  }, [id]);
 
   if (loading) {
     return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
@@ -64,11 +55,13 @@ export default function SolicitanteRequestDetailsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold font-headline">{project.title}</h1>
-          <div className="mt-2 flex items-center gap-2">
-            <Badge variant={project.status === 'en_revision' ? 'secondary' : 'outline'}>
-              {STATUS_LABELS[project.status]}
-            </Badge>
-          </div>
+          {/* Para "en revisión" el estado ya se comunica con la tarjeta amarilla
+              de abajo, así que evitamos el badge chiquito redundante. */}
+          {project.status !== 'en_revision' && (
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="outline">{STATUS_LABELS[project.status]}</Badge>
+            </div>
+          )}
         </div>
         {canEdit && (
           <Button asChild>
@@ -156,11 +149,17 @@ export default function SolicitanteRequestDetailsPage() {
               <span className="font-semibold block">Cupo:</span>
               <span className="text-muted-foreground">{project.studentLimit} estudiantes</span>
             </div>
-            <div>
-              <span className="font-semibold block">Habilidades:</span>
-              <span className="text-muted-foreground">
-                {project.requiredSkills.join(', ') || 'No especificadas'}
-              </span>
+            <div className="col-span-2">
+              <span className="font-semibold block mb-2">Habilidades:</span>
+              {project.requiredSkills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {project.requiredSkills.map((skill) => (
+                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-muted-foreground">No especificadas</span>
+              )}
             </div>
           </div>
         </CardContent>

@@ -21,7 +21,7 @@ export function SiteFooter() {
           <div className="grid gap-2">
             <h3 className="font-semibold text-lg" style={{ color: '#E0B3AF' }}>Otros</h3>
             <Link href="#" className="hover:underline">Manual de usuario</Link>
-            <Link href="#" className="hover:underline">Acerca de</Link>
+            <Link href="/acerca-de" className="hover:underline">Acerca de</Link>
             <Link href="#" className="hover:underline">Transparencia</Link>
           </div>
           <div className="flex flex-col items-start md:items-center justify-center gap-4">
@@ -32,8 +32,8 @@ export function SiteFooter() {
       </div>
       <div style={{ backgroundColor: '#E0B3AF' }} className="py-4 text-black">
         <div className="container max-w-7xl mx-auto flex justify-between items-center">
-          <p className="text-xs">© 2025 - 2027 Labsol Network.M Bajo licencia GPL v.3.a</p>
-          <a href="#" className="text-xs hover:underline">@Emiliano De Santiago (desarrollador)</a>
+          <p className="text-xs">© 2025 - 2027 Labsol Network. Bajo licencia GPL v.3</p>
+          <Link href="/acerca-de" className="text-xs hover:underline">Acerca de</Link>
         </div>
       </div>
     </footer>

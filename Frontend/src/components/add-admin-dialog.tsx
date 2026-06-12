@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
@@ -56,7 +57,7 @@ export function AddAdminDialog({ open, onOpenChange }: AddAdminDialogProps) {
               <Label htmlFor="password"  className="text-right">
                 Contraseña
               </Label>
-              <Input id="password" type="password" required className="col-span-3" />
+              <PasswordInput id="password" required className="col-span-3" />
             </div>
           </div>
           <DialogFooter>

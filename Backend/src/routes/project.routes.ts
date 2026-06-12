@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { createProject, getProjects, updateProject, reviewProject, updateThumbnail } from '../controllers/project.controller';
+import { createProject, getProjects, getProjectById, updateProject, reviewProject, updateThumbnail } from '../controllers/project.controller';
 import { verifyToken, isAdmin } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 router.get('/', verifyToken, getProjects);
+router.get('/:id', verifyToken, getProjectById);
 router.post('/', verifyToken, createProject);
 router.put('/:id', verifyToken, updateProject);
 router.put('/:id/review', verifyToken, isAdmin, reviewProject);

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getUserFromCookies, clearUserCookie, setUserCookie } from '@/lib/cookie-utils';
 import { getMyProfile } from '@/lib/api'; // <--- NUEVO IMPORT
+import { disconnectSocket } from '@/lib/socket';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import type { ApiUser } from '@/lib/api'; // Usamos tu tipo de API
 
@@ -41,6 +42,8 @@ export function UserNav() {
   }, []);
 
   const handleLogout = () => {
+    // Cerramos el socket para que el siguiente usuario no herede esta conexión.
+    disconnectSocket();
     clearUserCookie();
     router.push('/');
   };

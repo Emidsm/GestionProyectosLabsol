@@ -6,6 +6,7 @@ import projectRoutes from './routes/project.routes';
 import enrollmentRoutes from './routes/enrollment.routes';
 import uploadRoutes from './routes/upload.routes'; // Importamos rutas de subida
 import notificationRoutes from './routes/notification.routes'; // <-- NUEVO IMPORT
+import catalogRoutes from './routes/catalog.routes'; // Carreras / Estados / Municipios
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -24,3 +25,4 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/upload', uploadRoutes); // Registramos el endpoint
 app.use('/api/notifications', notificationRoutes); // <-- NUEVA RUTA
+app.use('/api/catalog', catalogRoutes); // Carreras / Estados / Municipios

@@ -1,7 +1,61 @@
 import { PrismaClient, Role, ProjectStatus, EnrollmentStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
+
+// Lista base de carreras (el admin puede agregar/editar/eliminar después).
+const CARRERAS_BASE = [
+  'Ingeniería en Software',
+  'Ingeniería en Sistemas Computacionales',
+  'Ingeniería en Computación',
+  'Ingeniería en Tecnologías de la Información',
+  'Ingeniería Industrial',
+  'Ingeniería Mecatrónica',
+  'Ingeniería Civil',
+  'Ingeniería Electrónica',
+  'Licenciatura en Administración',
+  'Licenciatura en Diseño Gráfico',
+  'Licenciatura en Mercadotecnia',
+  'Licenciatura en Contaduría',
+];
+
+// Siembra el catálogo de carreras de forma idempotente.
+async function seedCarreras() {
+  for (const nombre of CARRERAS_BASE) {
+    await prisma.carrera.upsert({
+      where: { nombre },
+      update: {},
+      create: { nombre },
+    });
+  }
+  console.log(`✅ Catálogo de carreras listo (${CARRERAS_BASE.length} base).`);
+}
+
+// Siembra estados y municipios (datos INEGI) solo si aún no existen.
+async function seedEstadosMunicipios() {
+  const existing = await prisma.estado.count();
+  if (existing > 0) {
+    console.log(`ℹ️ Estados/municipios ya sembrados (${existing} estados). Se omite.`);
+    return;
+  }
+
+  const dataPath = path.join(__dirname, 'data', 'estados-municipios.json');
+  const raw = fs.readFileSync(dataPath, 'utf-8');
+  const data: Record<string, string[]> = JSON.parse(raw);
+
+  let totalMunicipios = 0;
+  for (const [estadoNombre, municipios] of Object.entries(data)) {
+    const estado = await prisma.estado.create({ data: { nombre: estadoNombre } });
+    await prisma.municipio.createMany({
+      data: municipios.map((nombre) => ({ nombre, estadoId: estado.id })),
+      skipDuplicates: true,
+    });
+    totalMunicipios += municipios.length;
+  }
+  console.log(`✅ INEGI sembrado: ${Object.keys(data).length} estados, ${totalMunicipios} municipios.`);
+}
 
 async function main() {
   console.log('🌱 Iniciando la siembra de datos...');
@@ -81,6 +135,10 @@ async function main() {
     },
   });
   console.log(`✅ Inscripción generada para probar el dashboard.`);
+
+  // 6. Catálogos: carreras (CRUD admin) y estados/municipios (INEGI).
+  await seedCarreras();
+  await seedEstadosMunicipios();
 
   console.log('🚀 ¡Sembrado completado con éxito!');
 }

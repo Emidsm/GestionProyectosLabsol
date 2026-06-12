@@ -31,6 +31,7 @@ import {
   User,
   AlertTriangle,
   Users,
+  Edit,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -281,7 +282,9 @@ export default function AdminReviewSolicitudPage() {
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Duración:</span>
-                <span className="font-medium">{project.timeline}</span>
+                <span className="font-medium">
+                  {project.timeline || <span className="text-muted-foreground italic">Por definir</span>}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Cupo:</span>
@@ -289,7 +292,9 @@ export default function AdminReviewSolicitudPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Categoría:</span>
-                <span className="font-medium">{project.category}</span>
+                <span className="font-medium">
+                  {project.category || <span className="text-muted-foreground italic">Por definir</span>}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Creado:</span>
@@ -303,6 +308,12 @@ export default function AdminReviewSolicitudPage() {
           {/* Acciones — solo si está pendiente */}
           {project.status === 'en_revision' && (
             <div className="flex flex-col gap-3 pt-4">
+              <Button asChild variant="outline" className="w-full">
+                <Link href={`/administrador/proyectos/${project.id}/editar`}>
+                  <Edit className="mr-2 h-4 w-4" /> Completar datos
+                </Link>
+              </Button>
+
               <Button
                 onClick={handleApprove}
                 disabled={submitting}

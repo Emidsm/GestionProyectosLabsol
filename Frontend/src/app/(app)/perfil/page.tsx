@@ -2,7 +2,11 @@
 
 import * as React from 'react';
 import { getUserFromCookies, setUserCookie } from '@/lib/cookie-utils';
-import { getMyProfile, updateProfile, updateAvatar, uploadImage, type ApiUser } from '@/lib/api';
+import {
+  getMyProfile, updateProfile, updateAvatar, uploadImage,
+  getCarreras, getEstados, getMunicipios,
+  type ApiUser, type ApiCarrera, type ApiEstado, type ApiMunicipio,
+} from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +14,9 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
@@ -35,9 +42,31 @@ export default function ProfilePage() {
   const [phone, setPhone] = React.useState('');
   const [institution, setInstitution] = React.useState('');
   const [roleDetail, setRoleDetail] = React.useState('');
+  const [estado, setEstado] = React.useState('');
   const [municipality, setMunicipality] = React.useState('');
   const [jobTitle, setJobTitle] = React.useState('');
   const [activity, setActivity] = React.useState('');
+
+  // Catálogos (carreras dinámicas + INEGI estados/municipios).
+  const [carreras, setCarreras] = React.useState<ApiCarrera[]>([]);
+  const [estados, setEstados] = React.useState<ApiEstado[]>([]);
+  const [municipios, setMunicipios] = React.useState<ApiMunicipio[]>([]);
+
+  React.useEffect(() => {
+    getCarreras().then((data) => setCarreras(data.filter((c) => c.isActive))).catch(() => {});
+    getEstados().then(setEstados).catch(() => {});
+  }, []);
+
+  // Al cambiar el estado seleccionado, recargamos sus municipios.
+  React.useEffect(() => {
+    if (!estado) {
+      setMunicipios([]);
+      return;
+    }
+    const found = estados.find((e) => e.nombre === estado);
+    if (!found) return;
+    getMunicipios(found.id).then(setMunicipios).catch(() => setMunicipios([]));
+  }, [estado, estados]);
 
   React.useEffect(() => {
     getMyProfile()
@@ -46,6 +75,7 @@ export default function ProfilePage() {
         setPhone(data.phone || '');
         setInstitution(data.academicInstitution || data.company || '');
         setRoleDetail(data.career || '');
+        setEstado(data.estado || '');
         setMunicipality(data.municipality || '');
         setJobTitle(data.jobTitle || '');
         setActivity(data.activity || '');
@@ -63,7 +93,7 @@ export default function ProfilePage() {
     try {
       const payload =
         user.role === 'estudiante'
-          ? { phone, academicInstitution: institution, career: roleDetail, municipality }
+          ? { phone, academicInstitution: institution, career: roleDetail, estado, municipality }
           : { phone, company: institution, jobTitle, activity };
 
       const { user: updated } = await updateProfile(payload);
@@ -86,8 +116,8 @@ export default function ProfilePage() {
       // Usamos el endpoint que construiste
       const updatedUser = await updateAvatar(newUrl || ""); 
       
-      // Actualizamos el estado local
-      const newUserState = { ...user, avatarUrl: newUrl };
+      // Actualizamos el estado local (avatarUrl es string | undefined en ApiUser)
+      const newUserState = { ...user, avatarUrl: newUrl ?? undefined };
       setUser(newUserState);
       
       // ¡ESTO ES CLAVE! Actualizamos la cookie para que la barra de navegación (UserNav) reaccione
@@ -177,8 +207,36 @@ export default function ProfilePage() {
               {user.role === 'estudiante' && (
                 <>
                   <div className="grid gap-2">
+                    <Label>Estado</Label>
+                    <Select
+                      value={estado}
+                      onValueChange={(value) => {
+                        setEstado(value);
+                        setMunicipality(''); // reiniciamos municipio al cambiar de estado
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona tu estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {estados.map((e) => (
+                          <SelectItem key={e.id} value={e.nombre}>{e.nombre}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
                     <Label>Municipio</Label>
-                    <Input value={municipality} onChange={(e) => setMunicipality(e.target.value)} />
+                    <Select value={municipality} onValueChange={setMunicipality} disabled={!estado}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={estado ? 'Selecciona tu municipio' : 'Primero elige un estado'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {municipios.map((m) => (
+                          <SelectItem key={m.id} value={m.nombre}>{m.nombre}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid gap-2">
                     <Label>Institución Académica</Label>
@@ -186,7 +244,16 @@ export default function ProfilePage() {
                   </div>
                   <div className="grid gap-2">
                     <Label>Carrera</Label>
-                    <Input value={roleDetail} onChange={(e) => setRoleDetail(e.target.value)} />
+                    <Select value={roleDetail} onValueChange={setRoleDetail}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona tu carrera" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {carreras.map((c) => (
+                          <SelectItem key={c.id} value={c.nombre}>{c.nombre}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
@@ -277,6 +344,12 @@ export default function ProfilePage() {
 
                 {user.role === 'estudiante' && (
                   <>
+                    <div className="space-y-1">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> Estado
+                      </span>
+                      <p>{user.estado || 'No registrado'}</p>
+                    </div>
                     <div className="space-y-1">
                       <span className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
                         <MapPin className="h-3 w-3" /> Municipio

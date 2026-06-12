@@ -21,14 +21,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createProject } from '@/lib/api';
 
+// El solicitante solo captura nombre, resumen y descripción.
+// El administrador completa el resto (categoría, duración, habilidades, cupo).
 const formSchema = z.object({
   title: z.string().min(1, 'El nombre del proyecto es requerido.'),
   abstract: z.string().min(1, 'El resumen es requerido.'),
   description: z.string().min(1, 'La descripción es requerida.'),
-  category: z.string().min(1, 'La categoría es requerida.'),
-  timeline: z.string().min(1, 'La duración es requerida.'),
-  requiredSkills: z.string(), // CSV separado por comas
-  studentLimit: z.coerce.number().min(1).max(20),
 });
 
 export default function CreateProjectPage() {
@@ -42,29 +40,16 @@ export default function CreateProjectPage() {
       title: '',
       abstract: '',
       description: '',
-      category: '',
-      timeline: '',
-      requiredSkills: '',
-      studentLimit: 4,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>, submitStatus: 'borrador' | 'en_revision') {
     setSubmitting(true);
     try {
-      const skills = values.requiredSkills
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-
       await createProject({
         title: values.title,
         abstract: values.abstract,
         description: values.description,
-        category: values.category,
-        timeline: values.timeline,
-        requiredSkills: skills,
-        studentLimit: values.studentLimit,
         status: submitStatus,
       });
 
@@ -136,63 +121,11 @@ export default function CreateProjectPage() {
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoría</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: Tecnología, IoT..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="timeline"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Duración</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: 6 meses" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="requiredSkills"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Habilidades requeridas</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Python, React, IoT (separadas por comas)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="studentLimit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cupo máximo de estudiantes</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={1} max={20} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <p className="text-sm text-muted-foreground bg-muted/40 border rounded-md p-3">
+                Solo necesitas el nombre, el resumen y la descripción. El equipo
+                administrador definirá la categoría, duración, habilidades
+                requeridas y el cupo de estudiantes al revisar tu solicitud.
+              </p>
 
               <div className="flex gap-3 pt-2">
                 <Button

@@ -10,7 +10,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       select: {
         id: true, email: true, name: true, role: true, avatarUrl: true,
         phone: true, company: true, jobTitle: true, activity: true,
-        career: true, academicInstitution: true, municipality: true,
+        career: true, academicInstitution: true, estado: true, municipality: true,
         isActive: true, createdAt: true,
       }
     });
@@ -57,7 +57,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     // Campos según rol
     const {
       // Estudiante
-      academicInstitution, career, municipality,
+      academicInstitution, career, estado, municipality,
       // Solicitante
       company, jobTitle, activity,
     } = req.body;
@@ -69,6 +69,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     if (role === 'estudiante') {
       if (academicInstitution !== undefined) data.academicInstitution = academicInstitution;
       if (career !== undefined) data.career = career;
+      if (estado !== undefined) data.estado = estado;
       if (municipality !== undefined) data.municipality = municipality;
     }
 
@@ -84,7 +85,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       select: {
         id: true, email: true, name: true, role: true, avatarUrl: true,
         phone: true, company: true, jobTitle: true, activity: true,
-        career: true, academicInstitution: true, municipality: true,
+        career: true, academicInstitution: true, estado: true, municipality: true,
         isActive: true, createdAt: true,
       }
     });
@@ -104,7 +105,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
       select: {
         id: true, email: true, name: true, role: true, avatarUrl: true,
         phone: true, company: true, jobTitle: true, academicInstitution: true,
-        career: true, municipality: true, isActive: true, createdAt: true,
+        career: true, estado: true, municipality: true, isActive: true, createdAt: true,
       },
       orderBy: { createdAt: 'desc' }
     });

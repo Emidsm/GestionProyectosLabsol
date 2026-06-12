@@ -16,6 +16,7 @@ export const register = async (req: Request, res: Response) => {
       phone,
       // Campos de estudiante
       academicInstitution,
+      estado,
       municipality,
       career,
       // Campos de solicitante
@@ -41,6 +42,7 @@ export const register = async (req: Request, res: Response) => {
         role: role || 'estudiante',
         phone,
         academicInstitution,
+        estado,
         municipality,
         career,
         company,

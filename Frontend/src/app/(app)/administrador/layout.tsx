@@ -17,6 +17,7 @@ import {
   FileCheck,
   FolderKanban,
   User,
+  GraduationCap,
 } from 'lucide-react';
 
 // NOTA: Eliminamos imports de UserNav e Image porque ya no se usan aquí.
@@ -61,6 +62,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <Link href="/administrador/inscripciones">
                     <User />
                     Inscripciones
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname.startsWith('/administrador/carreras')}>
+                  <Link href="/administrador/carreras">
+                    <GraduationCap />
+                    Carreras
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -88,6 +88,7 @@ export interface ApiUser {
   academicInstitution?: string;
   career?: string;
   jobTitle?: string;
+  estado?: string;
   municipality?: string;
   activity?: string;
   isActive: boolean;
@@ -165,6 +166,15 @@ async function apiFetch<T>(
 /** GET /api/projects — devuelve todos los proyectos no eliminados */
 export async function getProjects(): Promise<ApiProject[]> {
   return apiFetch<ApiProject[]>('/api/projects');
+}
+
+/**
+ * GET /api/projects/:id — un proyecto con control de acceso en el servidor.
+ * Lanza Error('No tienes permiso para ver este proyecto.') con un 403 si el
+ * usuario no puede verlo (p. ej. una solicitud en revisión que no es suya).
+ */
+export async function getProject(id: string): Promise<ApiProject> {
+  return apiFetch<ApiProject>(`/api/projects/${id}`);
 }
 
 /** POST /api/projects — crea un proyecto */
@@ -336,6 +346,7 @@ export async function updateProfile(data: Partial<{
   phone: string;
   academicInstitution: string;
   career: string;
+  estado: string;
   municipality: string;
   company: string;
   jobTitle: string;
@@ -373,4 +384,72 @@ export async function markOneNotificationAsRead(id: string): Promise<ApiNotifica
   return apiFetch(`/api/notifications/${id}/read`, {
     method: 'PATCH',
   });
+}
+
+// ============================================================
+// CATÁLOGOS (Carreras / Estados / Municipios)
+// ============================================================
+
+export interface ApiCarrera {
+  id: string;
+  nombre: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiEstado {
+  id: string;
+  nombre: string;
+}
+
+export interface ApiMunicipio {
+  id: string;
+  nombre: string;
+  estadoId: string;
+}
+
+/** GET /api/catalog/carreras — lista de carreras */
+export async function getCarreras(): Promise<ApiCarrera[]> {
+  return apiFetch<ApiCarrera[]>('/api/catalog/carreras');
+}
+
+/** POST /api/catalog/carreras — crea una carrera (admin) */
+export async function createCarrera(
+  nombre: string
+): Promise<{ message: string; carrera: ApiCarrera }> {
+  return apiFetch('/api/catalog/carreras', {
+    method: 'POST',
+    body: JSON.stringify({ nombre }),
+  });
+}
+
+/** PUT /api/catalog/carreras/:id — edita una carrera (admin) */
+export async function updateCarrera(
+  id: string,
+  data: Partial<{ nombre: string; isActive: boolean }>
+): Promise<{ message: string; carrera: ApiCarrera }> {
+  return apiFetch(`/api/catalog/carreras/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/** DELETE /api/catalog/carreras/:id — elimina una carrera (admin) */
+export async function deleteCarrera(id: string): Promise<{ message: string }> {
+  return apiFetch(`/api/catalog/carreras/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+/** GET /api/catalog/estados — lista de estados (INEGI) */
+export async function getEstados(): Promise<ApiEstado[]> {
+  return apiFetch<ApiEstado[]>('/api/catalog/estados');
+}
+
+/** GET /api/catalog/municipios?estadoId= — municipios de un estado (INEGI) */
+export async function getMunicipios(estadoId: string): Promise<ApiMunicipio[]> {
+  return apiFetch<ApiMunicipio[]>(
+    `/api/catalog/municipios?estadoId=${encodeURIComponent(estadoId)}`
+  );
 }
