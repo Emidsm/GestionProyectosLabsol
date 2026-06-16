@@ -52,7 +52,7 @@ export const createProject = async (req: AuthRequest, res: Response) => {
 // ============================================================
 export const updateProject = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const userId = req.user?.id;
     const { title, abstract, description, category, requiredSkills, timeline, studentLimit, status } = req.body;
 
@@ -181,7 +181,7 @@ export const getProjectById = async (req: AuthRequest, res: Response) => {
 // ============================================================
 export const reviewProject = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const { status, feedbackMessage } = req.body; 
     const adminId = req.user?.id;
 
@@ -242,7 +242,7 @@ export const reviewProject = async (req: AuthRequest, res: Response) => {
 // ============================================================
 export const updateThumbnail = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const userId = req.user?.id;
     const { thumbnailUrl } = req.body;
 
