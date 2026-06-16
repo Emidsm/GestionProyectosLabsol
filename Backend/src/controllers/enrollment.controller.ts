@@ -53,7 +53,7 @@ export const forceEnrollStudent = async (req: AuthRequest, res: Response) => {
 
 export const getProjectEnrollments = async (req: Request, res: Response) => {
   try {
-    const { projectId } = req.params;
+    const { projectId } = req.params as { projectId: string };
     const enrollments = await prisma.enrollment.findMany({
       where: { projectId },
       include: { student: { select: { name: true, email: true, career: true, academicInstitution: true } } },
@@ -68,7 +68,7 @@ export const getProjectEnrollments = async (req: Request, res: Response) => {
 // NUEVO: El administrador evalúa la inscripción del estudiante
 export const reviewEnrollment = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params; // ID de la inscripción (enrollment)
+    const { id } = req.params as { id: string }; // ID de la inscripción (enrollment)
     const { status } = req.body; // 'aceptado' o 'rechazado'
 
     if (status !== 'aceptado' && status !== 'rechazado') {
@@ -175,7 +175,7 @@ export const getAllPendingEnrollments = async (req: AuthRequest, res: Response) 
     res.status(500).json({ error: 'Error al obtener inscripciones pendientes globales' });
   }
 };
-export const getMyEnrollments = async (req: Request, res: Response) => {
+export const getMyEnrollments = async (req: AuthRequest, res: Response) => {
   try {
     // Asumiendo que tu auth.middleware.ts inyecta el usuario en req.user
     const userId = req.user?.id; 
