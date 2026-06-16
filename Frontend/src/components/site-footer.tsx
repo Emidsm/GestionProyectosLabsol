@@ -25,8 +25,8 @@ export function SiteFooter() {
             <Link href="#" className="hover:underline">Transparencia</Link>
           </div>
           <div className="flex flex-col items-start md:items-center justify-center gap-4">
-            <Image src="/placeholder.svg" width={150} height={50} alt="Logo 1" />
-            <Image src="/placeholder.svg" width={150} height={50} alt="Logo 2" />
+            <Image src="/images/Logos Labsol 2023-02.png" width={150} height={50} alt="Labsol" />
+            <Image src="/images/GPLv3_Logo.svg.png" width={150} height={50} alt="GPL v3" />
           </div>
         </div>
       </div>
