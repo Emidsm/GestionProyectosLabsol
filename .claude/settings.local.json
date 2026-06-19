@@ -32,7 +32,10 @@
       "Bash(docker compose *)",
       "Bash(npx prisma *)",
       "Bash(echo \"exit=$? errors=$\\(grep -c 'error TS' /tmp/fe_r.txt\\)\")",
-      "Bash(echo \"exit=$? errors=$\\(grep -c 'error TS' /tmp/fe_null.txt\\)\")"
+      "Bash(echo \"exit=$? errors=$\\(grep -c 'error TS' /tmp/fe_null.txt\\)\")",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git push *)"
     ]
   }
 }
